@@ -8,10 +8,10 @@
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 /* STEP 4.1 - Include the header for the Modem Key Management library */
-#include <modem/modem_key_mgmt.h>
+
 #include "mqtt_connection.h"
 /* STEP 3.3 - Include certificate.h */
-#include "certificate.h"
+
 /* Buffers for MQTT client. */
 static uint8_t rx_buffer[CONFIG_MQTT_MESSAGE_BUFFER_SIZE];
 static uint8_t tx_buffer[CONFIG_MQTT_MESSAGE_BUFFER_SIZE];
@@ -25,21 +25,7 @@ LOG_MODULE_DECLARE(Lesson4_Exercise2);
 /**@brief Function to store the server x.509 root certificate to the modem 
  */
 /* STEP 4.2 - Add the function certificate_provision() that will store the certificate to the modem.*/
-int certificate_provision(void)
-{
-	int err = 0;
 
-	LOG_INF("Provisioning certificates");
-	err = modem_key_mgmt_write(CONFIG_MQTT_TLS_SEC_TAG,
-				   MODEM_KEY_MGMT_CRED_TYPE_CA_CHAIN,
-				   CA_CERTIFICATE,
-				   strlen(CA_CERTIFICATE));
-	if (err) {
-		LOG_ERR("Failed to provision CA certificate: %d", err);
-		return err;
-	}
-	return err;
-}
 
 /**@brief Function to get the payload of recived data.
  */
@@ -352,25 +338,7 @@ int client_init(struct mqtt_client *client)
 	client->tx_buf_size = sizeof(tx_buffer);
 
 	/* STEP 5 - Modify the client client_init() function to use Secure TCP transport instead of non-secure TCP transport.  */
-
-	//get a pointer to the TLS configration 
-	struct mqtt_sec_config *tls_cfg = &(client->transport).tls.config;
-	static sec_tag_t sec_tag_list[] = { CONFIG_MQTT_TLS_SEC_TAG };
-
-	LOG_INF("TLS enabled");
-	client->transport.type = MQTT_TRANSPORT_SECURE;
-
-	tls_cfg->peer_verify = CONFIG_MQTT_TLS_PEER_VERIFY;
-	tls_cfg->cipher_list = NULL;
-	tls_cfg->cipher_count = 0;
-	tls_cfg->sec_tag_count = ARRAY_SIZE(sec_tag_list);
-	tls_cfg->sec_tag_list = sec_tag_list;
-	tls_cfg->hostname = CONFIG_MQTT_BROKER_HOSTNAME;
-
-	tls_cfg->session_cache = IS_ENABLED(CONFIG_MQTT_TLS_SESSION_CACHING) ?
-					    TLS_SESSION_CACHE_ENABLED :
-					    TLS_SESSION_CACHE_DISABLED;
-
+	client->transport.type = MQTT_TRANSPORT_NON_SECURE;
 
 	return err;
 }
@@ -383,7 +351,7 @@ int fds_init(struct mqtt_client *c, struct pollfd *fds)
 		fds->fd = c->transport.tcp.sock;
 	} else {
 		/* STEP 6 - Update the file descriptor for the socket to use TLS socket instead of a plain TCP socket.*/
-		fds->fd = c->transport.tls.sock;
+		return -ENOTSUP;
 	}
 
 	fds->events = POLLIN;
