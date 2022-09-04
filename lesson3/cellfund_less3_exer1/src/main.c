@@ -165,6 +165,7 @@ void main(void)
 			}
 
 			if (len == 0) {
+				//TCP Connection closed by the server
 				break;
 			}
 
