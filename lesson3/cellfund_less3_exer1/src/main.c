@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nordic Semiconductor ASA
+ * Copyright (c) 2022 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
@@ -17,12 +17,11 @@
 #define MESSAGE_SIZE 256 
 #define SERVER_HOSTNAME "eogietyprewxzqv.m.pipedream.net"
 #define SERVER_PORT "80"
-#define HTTP_PATH "/Hello from nRF9160"
-#define MESSAGE_TO_SEND "GET " HTTP_PATH " HTTP/1.0\r\nHost: " SERVER_HOSTNAME "\r\n\r\n"
+#define MESSAGE_TO_SEND "/Hello from nRF9160 SiP"
+#define HTTP_PATH "GET "MESSAGE_TO_SEND " HTTP/1.0\r\nHost: " SERVER_HOSTNAME "\r\n\r\n"
 #define SSTRLEN(s) (sizeof(s) - 1)
 
-
-LOG_MODULE_REGISTER(Lesson3_Exercise2, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Lesson3_Exercise1, LOG_LEVEL_INF);
 K_SEM_DEFINE(lte_connected, 0, 1);
 
 static int sock;
@@ -93,14 +92,14 @@ static int tcp_socket_conent(void)
 	//Create a stream socket in the IPv4 family that uses TCP. 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock < 0) {
-		LOG_INF("Failed to create socket: %d.", errno);
+		LOG_ERR("Failed to create socket: %d.", errno);
 		return -errno;
 	}
 
 	err = connect(sock, (struct sockaddr *)&server,
 		      sizeof(struct sockaddr_in));
 	if (err < 0) {
-		LOG_INF("Connect failed : %d", errno);
+		LOG_ERR("Connect failed : %d", errno);
 		return -errno;
 	}
 
@@ -112,7 +111,7 @@ static void button_handler(uint32_t button_states, uint32_t has_changed)
 	switch (has_changed) {
 	case DK_BTN1_MSK:
 		if (button_states & DK_BTN1_MSK){	
-			int err = send(sock, MESSAGE_TO_SEND, SSTRLEN(MESSAGE_TO_SEND), 0);
+			int err = send(sock, HTTP_PATH, SSTRLEN(HTTP_PATH), 0);
 			if (err < 0) {
 				LOG_INF("Failed to send message, %d", errno);
 				return;	
@@ -135,11 +134,9 @@ static void modem_configure(void)
 void main(void)
 {
 	int err;
-
 	modem_configure();
 	LOG_INF("Connecting to LTE network, this may take several minutes...");
 	k_sem_take(&lte_connected, K_FOREVER);	
-
 	err = dk_buttons_init(button_handler);
 	if (err){
 		LOG_ERR("Failed to initlize the Buttons Library");
@@ -148,7 +145,6 @@ void main(void)
 	if (err){
 		LOG_ERR("Failed to initlize the LEDs Library");
 	}
-
 	dk_set_led_on(DK_LED2);	
 	if (server_resolve() != 0) {
 		LOG_INF("Failed to resolve server name");
@@ -164,7 +160,7 @@ void main(void)
 			int len = recv(sock, recv_buf, sizeof(recv_buf) - 1, 0);
 
 			if (len < 0) {
-				printf("Error reading response\n");
+				LOG_ERR("Error reading response\n");
 				return;
 			}
 
@@ -173,10 +169,9 @@ void main(void)
 			}
 
 			recv_buf[len] = 0;
-			printf("%s", recv_buf);
+			LOG_INF("Data received from the server:\n%s", recv_buf);
 			
 		}
-		printf("\n");
 		(void)close(sock);
 	}
 }
