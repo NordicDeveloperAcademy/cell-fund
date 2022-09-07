@@ -13,10 +13,9 @@
 #include <logging/log.h>
 #include <dk_buttons_and_leds.h>
 
-
 #define MESSAGE_SIZE 256 
 #define SERVER_HOSTNAME "nordicecho.westeurope.cloudapp.azure.com"
-#define SERVER_PORT "2555"
+#define SERVER_PORT "2444"
 #define MESSAGE_TO_SEND "Hello from nRF9160 SiP"
 #define SSTRLEN(s) (sizeof(s) - 1)
 
@@ -35,7 +34,7 @@ static int server_resolve(void)
 	struct addrinfo *result;
 	struct addrinfo hints = {
 		.ai_family = AF_INET,
-		.ai_socktype = SOCK_STREAM
+		.ai_socktype = SOCK_DGRAM
 	};
 	
 
@@ -85,11 +84,11 @@ static void lte_handler(const struct lte_lc_evt *const evt)
      }
 }
 
-static int tcp_socket_conent(void)
+static int udp_socket_conent(void)
 {
 	int err;
-	//Create a stream socket in the IPv4 family that uses TCP. 
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	//Create a dgram socket in the IPv4 family that uses UDP. 
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		LOG_ERR("Failed to create socket: %d.", errno);
 		return -errno;
@@ -149,29 +148,28 @@ void main(void)
 		LOG_INF("Failed to resolve server name");
 		return;
 	}
-	for (;;){
-		if (tcp_socket_conent() != 0) {
-			LOG_INF("Failed to initialize client");
-			return;
-		}
+	
+	if (udp_socket_conent() != 0) {
+		LOG_INF("Failed to initialize client");
+		return;
+	}
+	LOG_INF("Press Button 1 on your Development Kit or Thingy:91 to send your message ");
 		while (1) {
 			// This is a blocking function 
 			int len = recv(sock, recv_buf, sizeof(recv_buf) - 1, 0);
 
 			if (len < 0) {
 				LOG_ERR("Error reading response\n");
-				return;
+				break;
 			}
 
 			if (len == 0) {
-				//TCP Connection closed by the server
 				break;
 			}
 
 			recv_buf[len] = 0;
-			LOG_INF("Data received from the server:\n%s", recv_buf);
+			LOG_INF("Data received from the server: (%s)", recv_buf);
 			
 		}
 		(void)close(sock);
-	}
 }
