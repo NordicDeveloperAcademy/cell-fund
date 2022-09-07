@@ -15,10 +15,9 @@
 
 
 #define MESSAGE_SIZE 256 
-#define SERVER_HOSTNAME "eogietyprewxzqv.m.pipedream.net"
-#define SERVER_PORT "80"
-#define MESSAGE_TO_SEND "/Hello from nRF9160 SiP"
-#define HTTP_PATH "GET "MESSAGE_TO_SEND " HTTP/1.0\r\nHost: " SERVER_HOSTNAME "\r\n\r\n"
+#define SERVER_HOSTNAME "nordicecho.westeurope.cloudapp.azure.com"
+#define SERVER_PORT "2555"
+#define MESSAGE_TO_SEND "Hello from nRF9160 SiP"
 #define SSTRLEN(s) (sizeof(s) - 1)
 
 LOG_MODULE_REGISTER(Lesson3_Exercise1, LOG_LEVEL_INF);
@@ -111,7 +110,7 @@ static void button_handler(uint32_t button_states, uint32_t has_changed)
 	switch (has_changed) {
 	case DK_BTN1_MSK:
 		if (button_states & DK_BTN1_MSK){	
-			int err = send(sock, HTTP_PATH, SSTRLEN(HTTP_PATH), 0);
+			int err = send(sock, MESSAGE_TO_SEND, SSTRLEN(MESSAGE_TO_SEND), 0);
 			if (err < 0) {
 				LOG_INF("Failed to send message, %d", errno);
 				return;	
