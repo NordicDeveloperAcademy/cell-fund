@@ -84,7 +84,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
      }
 }
 
-static int udp_socket_conent(void)
+static int udp_socket_connect(void)
 {
 	int err;
 	//Create a dgram socket in the IPv4 family that uses UDP. 
@@ -149,7 +149,7 @@ void main(void)
 		return;
 	}
 	
-	if (udp_socket_conent() != 0) {
+	if (udp_socket_connect() != 0) {
 		LOG_INF("Failed to initialize client");
 		return;
 	}

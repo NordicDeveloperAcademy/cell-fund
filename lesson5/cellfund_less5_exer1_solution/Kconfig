@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "nRF CoAP client sample"
+
+config COAP_GET_RESOURCE
+	string "CoAP resource - defaults to Californium observable resource"
+	default "large-update"
+
+config COAP_PUT_RESOURCE
+	string "CoAP resource - defaults to Californium echo resource"
+	default "large-update"
+
+config COAP_SERVER_HOSTNAME
+	string "CoAP server hostname"
+	default "californium.eclipseprojects.io"
+
+config COAP_SERVER_PORT
+	int "CoAP server port"
+	default 5683
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu
