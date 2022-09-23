@@ -6,12 +6,12 @@
 
 menu "nRF CoAP client sample"
 
-config COAP_GET_RESOURCE
-	string "CoAP resource - defaults to Californium observable resource"
-	default "large-update"
+config COAP_RX_RESOURCE
+	string "CoAP resource - this is the RX channel of the board"
+	default "validate"
 
-config COAP_PUT_RESOURCE
-	string "CoAP resource - defaults to Californium echo resource"
+config COAP_TX_RESOURCE
+	string "CoAP resource - this is the TX channel of the board"
 	default "large-update"
 
 config COAP_SERVER_HOSTNAME

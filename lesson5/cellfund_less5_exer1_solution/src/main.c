@@ -164,8 +164,8 @@ static int client_get_send(void)
 	}
 
 	err = coap_packet_append_option(&request, COAP_OPTION_URI_PATH,
-					(uint8_t *)CONFIG_COAP_GET_RESOURCE,
-					strlen(CONFIG_COAP_GET_RESOURCE));
+					(uint8_t *)CONFIG_COAP_RX_RESOURCE,
+					strlen(CONFIG_COAP_RX_RESOURCE));
 	if (err < 0) {
 		printk("Failed to encode CoAP option, %d\n", err);
 		return err;
@@ -210,8 +210,8 @@ static int client_put_send(void)
 	}
 
 	err = coap_packet_append_option(&request, COAP_OPTION_URI_PATH,
-					(uint8_t *)CONFIG_COAP_PUT_RESOURCE,
-					strlen(CONFIG_COAP_PUT_RESOURCE));
+					(uint8_t *)CONFIG_COAP_TX_RESOURCE,
+					strlen(CONFIG_COAP_TX_RESOURCE));
 	if (err < 0) {
 		printk("Failed to encode CoAP option, %d\n", err);
 		return err;
