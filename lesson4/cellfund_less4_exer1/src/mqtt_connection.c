@@ -56,7 +56,7 @@ static int get_received_payload(struct mqtt_client *c, size_t length)
 
 /**@brief Function to subscribe to the configured topic
  */
-/* STEP 5 - Subscribe to a specific topic */
+/* STEP 4 - Define the function subscribe() to subscribe to a specific topic.  */
 
 
 /**@brief Function to print strings without null-termination
@@ -72,7 +72,7 @@ static void data_print(uint8_t *prefix, uint8_t *data, size_t len)
 
 /**@brief Function to publish data on the configured topic
  */
-/* STEP 6.1 - Add the definition of the data_publish() function*/
+/* STEP 7.1 - Define the function data_publish() to publish data */
 
 
 
@@ -85,7 +85,7 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 
 	switch (evt->type) {
 	case MQTT_EVT_CONNACK:
-	/* STEP 4.1 - Subscribe to the topic CONFIG_MQTT_SUB_TOPIC when we have a successful connection */
+	/* STEP 5 - Subscribe to the topic CONFIG_MQTT_SUB_TOPIC when we have a successful connection */
 
 
 	case MQTT_EVT_DISCONNECT:
@@ -93,8 +93,15 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 		break;
 
 	case MQTT_EVT_PUBLISH:
-	/* STEP 4.2 - Listen to published messages received from the broker and extract the message */
+	/* STEP 6 - Listen to published messages received from the broker and extract the message */
+	{
+		/* STEP 6.1 - Extract the payload */
 
+		/* STEP 6.2 - On successful extraction of data */
+
+		/* STEP 6.3 - On failed extraction of data */
+
+	} break;
 
 
 
@@ -218,7 +225,7 @@ exit:
 
 /**@brief Initialize the MQTT client structure
  */
-/* STEP 3 - Initialize the MQTT client instance */
+/* STEP 3 - Define the function client_init() to initialize the MQTT client instance.  */
 
 
 /**@brief Initialize the file descriptor structure used by poll.
