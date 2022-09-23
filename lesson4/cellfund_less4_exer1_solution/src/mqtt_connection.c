@@ -56,7 +56,7 @@ static int get_received_payload(struct mqtt_client *c, size_t length)
 
 /**@brief Function to subscribe to the configured topic
  */
-/* STEP 5 - Subscribe to a specific topic */
+/* STEP 4 - Define the function subscribe() to subscribe to a specific topic.  */
 static int subscribe(struct mqtt_client *const c)
 {
 	struct mqtt_topic subscribe_topic = {
@@ -92,7 +92,7 @@ static void data_print(uint8_t *prefix, uint8_t *data, size_t len)
 
 /**@brief Function to publish data on the configured topic
  */
-/* STEP 6.1 - Add the definition of the data_publish() function*/
+/* STEP 7.1 - Define the function data_publish() to publish data */
 int data_publish(struct mqtt_client *c, enum mqtt_qos qos,
 	uint8_t *data, size_t len)
 {
@@ -123,7 +123,7 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 
 	switch (evt->type) {
 	case MQTT_EVT_CONNACK:
-	/* STEP 4.1 - Subscribe to the topic CONFIG_MQTT_SUB_TOPIC when we have a successful connection */
+	/* STEP 5 - Subscribe to the topic CONFIG_MQTT_SUB_TOPIC when we have a successful connection */
 		if (evt->result != 0) {
 			LOG_ERR("MQTT connect failed: %d", evt->result);
 			break;
@@ -138,8 +138,9 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 		break;
 
 	case MQTT_EVT_PUBLISH:
-	/* STEP 4.2 - Listen to published messages received from the broker and extract the message */
+	/* STEP 6 - Listen to published messages received from the broker and extract the message */
 	{
+		/* STEP 6.1 - Extract the payload */
 		const struct mqtt_publish_param *p = &evt->param.publish;
 		//Print the length of the recived message 
 		LOG_INF("MQTT PUBLISH result=%d len=%d",
@@ -157,8 +158,8 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 			/* Send acknowledgment. */
 			mqtt_publish_qos1_ack(c, &ack);
 		}
-		
-		//On successful extraction of data 
+
+		/* STEP 6.2 - On successful extraction of data */
 		if (err >= 0) {
 			data_print("Received: ", payload_buf, p->message.payload.len);
 			// Control the LED 
@@ -168,12 +169,12 @@ void mqtt_evt_handler(struct mqtt_client *const c,
 			else if(strncmp(payload_buf,CONFIG_TURN_LED_OFF_CMD,sizeof(CONFIG_TURN_LED_OFF_CMD)-1) == 0){
 				dk_set_led_off(LED_CONTROL_OVER_MQTT);
 			}
-		// On failed extraction of data - Payload buffer is smaller than the recived data . Increase 
+		/* STEP 6.3 - On failed extraction of data */
+		// Payload buffer is smaller than the received data 
 		} else if (err == -EMSGSIZE) {
-			LOG_ERR("Received payload (%d bytes) is larger than the payload buffer "
-				"size (%d bytes).",
+			LOG_ERR("Received payload (%d bytes) is larger than the payload buffer size (%d bytes).",
 				p->message.payload.len, sizeof(payload_buf));
-		//On failed extraction of data - Failed to extract data, disconnect 
+		// Failed to extract data, disconnect 
 		} else {
 			LOG_ERR("get_received_payload failed: %d", err);
 			LOG_INF("Disconnecting MQTT client...");
@@ -305,7 +306,7 @@ exit:
 
 /**@brief Initialize the MQTT client structure
  */
-/* STEP 3 - Initialize the MQTT client instance */
+/* STEP 3 - Define the function client_init() to initialize the MQTT client instance.  */
 int client_init(struct mqtt_client *client)
 {
 	int err;

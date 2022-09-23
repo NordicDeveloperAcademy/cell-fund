@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 #include <zephyr/kernel.h>
-#include <zephyr/net/mqtt.h>
 #include <zephyr/net/socket.h>
 #include <modem/lte_lc.h>
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include "mqtt_connection.h"
+
+/* STEP 2.3 - Include the header file for the MQTT Library*/
+#include <zephyr/net/mqtt.h>
 
 #define REGISTERED_STATUS_LED          DK_LED2
 
@@ -42,7 +44,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 static void button_handler(uint32_t button_states, uint32_t has_changed)
 {
-	/* STEP 6.2 - Call the data_publish() function when Button 1 is pressed to publish the message "Hi from the nRF9160 SiP" to the MQTT broker. */
+	/* STEP 7.2 - When button 1 is pressed, call data_publish() to publish a message. */
 	if (has_changed & button_states &
 	    BIT(CONFIG_BUTTON_EVENT_BTN_NUM - 1)) {
 		int ret;
