@@ -251,11 +251,23 @@ static int client_put_send(void)
 
 static void button_handler(uint32_t button_state, uint32_t has_changed) 
 {
+	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS) 
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		client_get_send();
 	} else if (has_changed & DK_BTN2_MSK && button_state & DK_BTN2_MSK) {
 		client_put_send();
 	}
+	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS) 
+	static bool toogle = 1;
+	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
+		if (toogle ==1){
+			client_get_send();	
+		}else{
+			client_put_send();
+		}
+		toogle = !toogle;
+	} 
+	#endif
 }
 
 void main(void)
