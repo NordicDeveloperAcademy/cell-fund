@@ -14,7 +14,7 @@ LOG_MODULE_REGISTER(Lesson2_Exercise1, LOG_LEVEL_INF);
 
 /* STEP 5 - Define the semaphore lte_connected */
 
-/* STEP 7 - Define the callback function lte_handler()*/ 
+/* STEP 7 - Define the callback function lte_handler() */ 
 
 /* STEP 6 - Define the function modem_configure() to initialize an LTE connection */
 
