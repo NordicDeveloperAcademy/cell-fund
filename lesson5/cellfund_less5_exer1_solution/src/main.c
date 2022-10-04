@@ -9,8 +9,8 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
-#include <modem/lte_lc.h>
 #include <zephyr/random/rand32.h>
+#include <modem/lte_lc.h>
 #include <dk_buttons_and_leds.h>
 
 /* STEP 2.2 - Include the header file for the CoAP library */
@@ -33,7 +33,6 @@ static int sock;
 static struct sockaddr_storage server;
 
 K_SEM_DEFINE(lte_connected, 0, 1);
-
 
 LOG_MODULE_REGISTER(Lesson5_Exercise1, LOG_LEVEL_INF);
 
