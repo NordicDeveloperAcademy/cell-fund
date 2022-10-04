@@ -131,14 +131,12 @@ static int client_init(void)
 /**@biref Send CoAP GET request. */
 static int client_get_send(void)
 {
-	int err;
-
 	/* STEP 7.1 - Create the CoAP message*/
 	struct coap_packet request;
 
 	next_token++;
 
-	err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),
+	int err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),
 			       APP_COAP_VERSION, COAP_TYPE_NON_CON,
 			       sizeof(next_token), (uint8_t *)&next_token,
 			       COAP_METHOD_GET, coap_next_id());

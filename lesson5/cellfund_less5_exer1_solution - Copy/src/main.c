@@ -127,28 +127,14 @@ static int client_init(void)
 	return 0;
 }
 
-/**@brief Handles responses from the remote CoAP server. */
-static int client_handle_get_response(uint8_t *buf, int received)
-{
-	/* STEP 9.1 - Parse the received CoAP packet */
-
-	/* STEP 9.2 - Confirm the token in the response matches the token sent */
-
-	/* STEP 9.3 - Retrieve the payload and confirm it's nonzero */
-
-	/* STEP 9.4 - Log the header code, token and payload of the response */
-
-	return 0;
-}
-
 /**@biref Send CoAP GET request. */
 static int client_get_send(void)
 {
-	int err;
-
 	/* STEP 7.1 - Create the CoAP message*/
 
+
 	/* STEP 7.2 - Add an option specifying the resource path */
+
 
 	/* STEP 7.3 - Send the configured CoAP packet */
 
@@ -165,8 +151,12 @@ static int client_put_send(void)
 
 	/* STEP 8.1 - Initialize the CoAP packet and append the resource path */ 
 
-	/* STEP 8.2 - Append the content format as plain text */
 
+	/* STEP 8.2 - Append the content format as plain text */
+	const uint8_t text_plain = COAP_CONTENT_FORMAT_TEXT_PLAIN;
+	err = coap_packet_append_option(&request, COAP_OPTION_CONTENT_FORMAT,
+					&text_plain,
+					sizeof(text_plain));
 	if (err < 0) {
 		LOG_ERR("Failed to encode CoAP option, %d\n", err);
 		return err;
@@ -174,13 +164,31 @@ static int client_put_send(void)
 
 	/* STEP 8.3 - Add the payload to the message */
 
+
 	err = send(sock, request.data, request.offset, 0);
 	if (err < 0) {
 		LOG_ERR("Failed to send CoAP request, %d\n", errno);
 		return -errno;
 	}
 
-	LOG_INF("CoAP request sent: token 0x%04x\n", next_token);
+	LOG_INF("CoAP PUT request sent: Token 0x%04x\n", next_token);
+
+	return 0;
+}
+
+/**@brief Handles responses from the remote CoAP server. */
+static int client_handle_response(uint8_t *buf, int received)
+{
+	/* STEP 9.1 - Parse the received CoAP packet */
+
+
+	/* STEP 9.2 - Confirm the token in the response matches the token sent */
+
+
+	/* STEP 9.3 - Retrieve the payload and confirm it's nonzero */
+
+
+	/* STEP 9.4 - Log the header code, token and payload of the response */
 
 	return 0;
 }
@@ -220,7 +228,9 @@ void main(void)
 	while (1) {
 		/* STEP 11 - Receive response from the CoAP server */
 
+
 		/* STEP 12 - Parse the receive d CoAP packet */
+
 	}
 
 	(void)close(sock);
