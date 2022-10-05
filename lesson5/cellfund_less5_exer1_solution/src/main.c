@@ -226,9 +226,13 @@ static int client_put_send(void)
 /**@brief Handles responses from the remote CoAP server. */
 static int client_handle_response(uint8_t *buf, int received)
 {
-	/* STEP 9.1 - Parse the received CoAP packet */
 	struct coap_packet reply;
-
+	uint8_t token[8];
+	uint16_t token_len;
+	const uint8_t *payload;
+	uint16_t payload_len;
+	uint8_t temp_buf[128];
+	/* STEP 9.1 - Parse the received CoAP packet */
 	int err = coap_packet_parse(&reply, buf, received, NULL, 0);
 	if (err < 0) {
 		LOG_ERR("Malformed response received: %d\n", err);
@@ -236,11 +240,7 @@ static int client_handle_response(uint8_t *buf, int received)
 	}
 
 	/* STEP 9.2 - Confirm the token in the response matches the token sent */
-	uint8_t token[8];
-	uint16_t token_len;
-
 	token_len = coap_header_get_token(&reply, token);
-
 	if ((token_len != sizeof(next_token)) ||
 	    (memcmp(&next_token, token, sizeof(next_token)) != 0)) {
 		LOG_ERR("Invalid token received: 0x%02x%02x\n",
@@ -249,10 +249,6 @@ static int client_handle_response(uint8_t *buf, int received)
 	}
 
 	/* STEP 9.3 - Retrieve the payload and confirm it's nonzero */
-	const uint8_t *payload;
-	uint16_t payload_len;
-	uint8_t temp_buf[128];
-
 	payload = coap_packet_get_payload(&reply, &payload_len);
 
 	if (payload_len > 0) {

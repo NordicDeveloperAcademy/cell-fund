@@ -171,6 +171,12 @@ static int client_put_send(void)
 /**@brief Handles responses from the remote CoAP server. */
 static int client_handle_response(uint8_t *buf, int received)
 {
+	struct coap_packet reply;
+	uint8_t token[8];
+	uint16_t token_len;
+	const uint8_t *payload;
+	uint16_t payload_len;
+	uint8_t temp_buf[128];
 	/* STEP 9.1 - Parse the received CoAP packet */
 
 
