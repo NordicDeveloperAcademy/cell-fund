@@ -21,7 +21,9 @@ config COAP_RX_RESOURCE
 	string "CoAP resource - this is the RX channel of the board"
 	default "validate"
 
-# STEP 2 - Define two new DTLS related configurations 
+# STEP 2.1 - Define the PSK Identity configuration
+
+# STEP 2.2 - Define the PSK Secret configuration
 
 endmenu
 
