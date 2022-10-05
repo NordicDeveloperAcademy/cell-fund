@@ -153,14 +153,6 @@ static int client_put_send(void)
 
 
 	/* STEP 8.2 - Append the content format as plain text */
-	const uint8_t text_plain = COAP_CONTENT_FORMAT_TEXT_PLAIN;
-	err = coap_packet_append_option(&request, COAP_OPTION_CONTENT_FORMAT,
-					&text_plain,
-					sizeof(text_plain));
-	if (err < 0) {
-		LOG_ERR("Failed to encode CoAP option, %d\n", err);
-		return err;
-	}
 
 	/* STEP 8.3 - Add the payload to the message */
 
