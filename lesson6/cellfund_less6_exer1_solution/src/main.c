@@ -12,28 +12,18 @@
 #include <modem/lte_lc.h>
 #include <dk_buttons_and_leds.h>
 
+/* STEP 4 - Include the header file for the GNSS interface */
 #include <nrf_modem_gnss.h>
 
-#define SLEEP_TIME_MS   60*1000
-
 static K_SEM_DEFINE(lte_connected, 0, 1);
-K_SEM_DEFINE(pvt_data_sem, 0, 1);
-K_SEM_DEFINE(active_time, 0, 1);
+
+/* STEP 5.1 - Define the semaphore pvt_data_sem */
+static K_SEM_DEFINE(pvt_data_sem, 0, 1);
+
+/* STEP 5.2 - Define the PVT data frame variable */
+static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
-
-static struct nrf_modem_gnss_pvt_data_frame current_pvt;
-static struct nrf_modem_gnss_pvt_data_frame last_pvt;
-
-static struct nrf_modem_gnss_nmea_data_frame gnss_nmea_data;
-
-static bool nrf_modem_gnss_fix;
-
-enum gnss_status device_status; 
-enum gnss_status{
-	status_searching = DK_LED2, 
-	status_connected = DK_LED1,
-	status_fixed = DK_LED3};
 
 static void lte_handler(const struct lte_lc_evt *const evt)
 {
@@ -62,41 +52,38 @@ static void modem_configure(void)
 	}
 }
 
+/* STEP 6 - Define a function to log fix data in a readable format */
 static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
-	LOG_INF("Latitude:       %.06f\n", pvt_data->latitude);
-	LOG_INF("Longitude:      %.06f\n", pvt_data->longitude);
-	LOG_INF("Altitude:       %.01f m\n", pvt_data->altitude);
-	LOG_INF("Time (UTC):     %02u:%02u:%02u.%03u\n",
+	LOG_INF("Latitude:       %.06f", pvt_data->latitude);
+	LOG_INF("Longitude:      %.06f", pvt_data->longitude);
+	LOG_INF("Altitude:       %.01f m", pvt_data->altitude);
+	LOG_INF("Time (UTC):     %02u:%02u:%02u.%03u",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,
 	       pvt_data->datetime.seconds,
 	       pvt_data->datetime.ms);
 }
 
+
 static void gnss_event_handler(int event)
 {
 	int err;
 
 	switch (event) {
+	/* STEP 7 - On a PVT event, confirm of PVT data is a valid fix */
 	case NRF_MODEM_GNSS_EVT_PVT:
 		LOG_INF("Searching...");
-		err = nrf_modem_gnss_read(&last_pvt, sizeof(last_pvt), NRF_MODEM_GNSS_DATA_PVT);
+		err = nrf_modem_gnss_read(&pvt_data, sizeof(pvt_data), NRF_MODEM_GNSS_DATA_PVT);
 		if (err) {
 			LOG_ERR("nrf_modem_gnss_read failed, err %d", err);
 			return;
 		}
-		if (last_pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
-			nrf_modem_gnss_fix = true;
-			current_pvt = last_pvt;
-			print_fix_data(&current_pvt);
+		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
+			print_fix_data(&pvt_data);
 			k_sem_give(&pvt_data_sem);
-		} else {
-			nrf_modem_gnss_fix = false;
 		}
 		break;
-	case NRF_MODEM_GNSS_EVT_BLOCKED:
-		LOG_INF("NRF_MODEM_GNSS_EVT_BLOCKED");
 	default:
 		break;
 	}
@@ -118,6 +105,7 @@ void main(void)
 	LOG_INF("Connected to LTE network");
 	dk_set_led_on(DK_LED2);	
 	
+	/* STEP 8 - Deactivate LTE and activate GNSS */
 	LOG_INF("Deactivating LTE");
 	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE) != 0) {
 		LOG_ERR("Failed to activate GNSS functional mode");
@@ -130,11 +118,13 @@ void main(void)
 		return;
 	}
 
+	/* STEP 9 - Register the GNSS event handler */
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
 		LOG_ERR("Failed to set GNSS event handler");
 		return;
 	}
 
+	/* STEP 10 - Set the GNSS fix interval and GNSS fix retry period */
 	if (nrf_modem_gnss_fix_interval_set(CONFIG_GNSS_PERIODIC_INTERVAL) != 0) {
 		LOG_ERR("Failed to set GNSS fix interval");
 		return;
@@ -145,6 +135,7 @@ void main(void)
 		return;
 	}
 
+	/* STEP 11 - Start the GNSS receiver*/
 	LOG_INF("Starting GNSS");
 	if (nrf_modem_gnss_start() != 0) {
 		LOG_ERR("Failed to start GNSS");
@@ -152,10 +143,11 @@ void main(void)
 	}
 
 	while (1) {
+		/* STEP 12.1 - Take the pvt_data_sem semaphore */
 		k_sem_take(&pvt_data_sem, K_FOREVER);
 
-		k_msleep(SLEEP_TIME_MS);
-
+		/* STEP 12.2 - Sleep for 1 minute */
+		k_sleep(K_SECONDS(60));
 		}
 }
 
