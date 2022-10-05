@@ -31,9 +31,7 @@ static uint16_t next_token;
 
 static int sock;
 static struct sockaddr_storage server;
-
 K_SEM_DEFINE(lte_connected, 0, 1);
-
 LOG_MODULE_REGISTER(Lesson5_Exercise1, LOG_LEVEL_INF);
 
 /**@brief Resolves the configured hostname. */
