@@ -17,10 +17,10 @@
 
 static K_SEM_DEFINE(lte_connected, 0, 1);
 
-/* STEP 5.1 - Define the semaphore pvt_data_sem */
-
-
 /* STEP 5.2 - Define the PVT data frame variable */
+
+
+/* STEP 12.1 - Declare helper variables to find the TTFF */
 
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
@@ -38,6 +38,10 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				"Connected - home network" : "Connected - roaming");
 		k_sem_give(&lte_connected);
 		break;
+	case LTE_LC_EVT_RRC_UPDATE:
+		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
+				"Connected" : "Idle");
+		break;	
 	default:
 		break;
 	}
@@ -50,6 +54,10 @@ static void modem_configure(void)
 		LOG_ERR("Modem could not be configured, error: %d", err);
 		return;
 	}
+	LOG_INF("Connecting to LTE network");
+	k_sem_take(&lte_connected, K_FOREVER);
+	LOG_INF("Connected to LTE network");
+	dk_set_led_on(DK_LED2);
 }
 
 /* STEP 6 - Define a function to log fix data in a readable format */
@@ -64,28 +72,23 @@ static void gnss_event_handler(int event)
 	int err;
 
 	switch (event) {
-	/* STEP 7 - On a PVT event, confirm of PVT data is a valid fix */
+	/* STEP 7 - On a PVT event, confirm if PVT data is a valid fix */
+	case NRF_MODEM_GNSS_EVT_PVT:
 
+		break;
 	default:
 		break;
 	}
-}	
+}
 
 void main(void)
 {
 
-	int err;
-	
-	err = dk_leds_init();
-	if (err){
+	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LEDs Library");
 	}
 
 	modem_configure();
-	LOG_INF("Connecting to LTE network, this may take several minutes...");
-	k_sem_take(&lte_connected, K_FOREVER);
-	LOG_INF("Connected to LTE network");
-	dk_set_led_on(DK_LED2);	
 	
 	/* STEP 8 - Deactivate LTE and activate GNSS */
 
@@ -99,12 +102,7 @@ void main(void)
 	/* STEP 11 - Start the GNSS receiver*/
 
 
-	while (1) {
-		/* STEP 12.1 - Take the pvt_data_sem semaphore */
-		
+	/* STEP 12.2 - Log the current system uptime */
 
-		/* STEP 12.2 - Sleep for 1 minute */
-		
-		}
 }
 
