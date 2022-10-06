@@ -1,17 +1,21 @@
-#include <zephyr/kernel.h>
-#include <string.h>
 #include <stdio.h>
-#include <zephyr/net/mqtt.h>
-#include <zephyr/net/socket.h>
-#include <nrf_modem_at.h>
-#include <zephyr/random/rand32.h>
+#include <string.h>
+
 #include <zephyr/logging/log.h>
+#include <zephyr/kernel.h>
+#include <zephyr/net/socket.h>
+#include <zephyr/random/rand32.h>
+#include <zephyr/net/mqtt.h>
+
 #include <dk_buttons_and_leds.h>
-/* STEP 4.1 - Include the header for the Modem Key Management library */
-#include <modem/modem_key_mgmt.h>
 #include "mqtt_connection.h"
+
+/* STEP 2.4 - Include the header for the Modem Key Management library */
+#include <modem/modem_key_mgmt.h>
+
 /* STEP 3.3 - Include certificate.h */
 #include "certificate.h"
+
 /* Buffers for MQTT client. */
 static uint8_t rx_buffer[CONFIG_MQTT_MESSAGE_BUFFER_SIZE];
 static uint8_t tx_buffer[CONFIG_MQTT_MESSAGE_BUFFER_SIZE];

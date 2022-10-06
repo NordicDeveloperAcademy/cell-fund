@@ -15,17 +15,17 @@
 /* STEP 4 - Include the header file for the GNSS interface */
 #include <nrf_modem_gnss.h>
 
-static K_SEM_DEFINE(lte_connected, 0, 1);
+//static K_SEM_DEFINE(lte_connected, 0, 1);
 
 /* STEP 5.1 - Define the semaphore pvt_data_sem */
-static K_SEM_DEFINE(pvt_data_sem, 0, 1);
+//static K_SEM_DEFINE(pvt_data_sem, 0, 1);
 
 /* STEP 5.2 - Define the PVT data frame variable */
 static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
-static void lte_handler(const struct lte_lc_evt *const evt)
+/*static void lte_handler(const struct lte_lc_evt *const evt)
 {
 	switch (evt->type) {
 	case LTE_LC_EVT_NW_REG_STATUS:
@@ -50,7 +50,7 @@ static void modem_configure(void)
 		LOG_ERR("Modem could not be configured, error: %d", err);
 		return;
 	}
-}
+}*/
 
 /* STEP 6 - Define a function to log fix data in a readable format */
 static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
@@ -73,6 +73,7 @@ static void gnss_event_handler(int event)
 	switch (event) {
 	/* STEP 7 - On a PVT event, confirm of PVT data is a valid fix */
 	case NRF_MODEM_GNSS_EVT_PVT:
+		dk_set_led_off(DK_LED1);
 		LOG_INF("Searching...");
 		err = nrf_modem_gnss_read(&pvt_data, sizeof(pvt_data), NRF_MODEM_GNSS_DATA_PVT);
 		if (err) {
@@ -80,14 +81,15 @@ static void gnss_event_handler(int event)
 			return;
 		}
 		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
+			dk_set_led_on(DK_LED1);
 			print_fix_data(&pvt_data);
-			k_sem_give(&pvt_data_sem);
+			//k_sem_give(&pvt_data_sem);
 		}
 		break;
 	default:
 		break;
 	}
-}	
+}
 
 void main(void)
 {
@@ -98,17 +100,17 @@ void main(void)
 	if (err){
 		LOG_ERR("Failed to initialize the LEDs Library");
 	}
-
-	modem_configure();
+	/*modem_configure();
 	LOG_INF("Connecting to LTE network, this may take several minutes...");
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
-	dk_set_led_on(DK_LED2);	
+	dk_set_led_on(DK_LED2);	*/
 	
 	/* STEP 8 - Deactivate LTE and activate GNSS */
 	LOG_INF("Deactivating LTE");
 	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE) != 0) {
-		LOG_ERR("Failed to activate GNSS functional mode");
+		//LOG_ERR("Failed to activate GNSS functional mode");
+		LOG_INF("Failed to activate GNSS functional mode");
 		return;
 	}
 
@@ -144,10 +146,10 @@ void main(void)
 
 	while (1) {
 		/* STEP 12.1 - Take the pvt_data_sem semaphore */
-		k_sem_take(&pvt_data_sem, K_FOREVER);
+		//k_sem_take(&pvt_data_sem, K_FOREVER);
 
 		/* STEP 12.2 - Sleep for 1 minute */
-		k_sleep(K_SECONDS(60));
+		//k_sleep(K_SECONDS(60));
 		}
 }
 

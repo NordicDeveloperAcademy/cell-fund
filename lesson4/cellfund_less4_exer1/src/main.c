@@ -3,10 +3,12 @@
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
+
+#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
+
 #include <modem/lte_lc.h>
-#include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include "mqtt_connection.h"
 
