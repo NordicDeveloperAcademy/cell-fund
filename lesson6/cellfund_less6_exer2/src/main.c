@@ -29,7 +29,7 @@ static int64_t gnss_start_time;
 static bool first_fix = false;
 
 /* STEP 3.1 - Declare buffer to send data in */
-static uint8_t gps_data[MESSAGE_SIZE];
+
 
 static int sock;
 static struct sockaddr_storage server;
@@ -111,18 +111,9 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				"Connected" : "Idle");
 		break;
 	/* STEP 9.1 - On event PSM update, print PSM paramters and check if was enabled */
-	case LTE_LC_EVT_PSM_UPDATE:
-		LOG_INF("PSM parameter update: Periodic TAU: %d s, Active time: %d s",
-			evt->psm_cfg.tau, evt->psm_cfg.active_time);
-		if (evt->psm_cfg.active_time == -1){
-			LOG_ERR("Network rejected PSM parameters. Failed to setup network");
-		}
-		break;
+
 	/* STEP 9.2 - On event eDRX update, print eDRX paramters */
-	case LTE_LC_EVT_EDRX_UPDATE:
-		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
-			evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
-		break;				
+				
 	default:
 		break;
 	}
@@ -133,14 +124,7 @@ static void modem_configure(void)
 	int err;
 	
 	/* STEP 8 - Request PSM and eDRX from the network */
-	err = lte_lc_psm_req(true);
-	if (err) {
-		LOG_ERR("lte_lc_psm_req, error: %d", err);
-	} 
-	err = lte_lc_edrx_req(true);
-	if (err) {
-		LOG_ERR("lte_lc_edrx_req, error: %d", err);
-	}
+
 
 	LOG_INF("Connecting to LTE network");
 
@@ -166,10 +150,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 	       pvt_data->datetime.ms);
 	
 	/* STEP 3.2 - Store latitude and longitude in gps_data buffer */
-	int err = snprintf(gps_data, MESSAGE_SIZE, "Latitude: %.06f, Longitude: %.06f", pvt_data->latitude, pvt_data->longitude);	
-	if (err < 0) {
-		LOG_ERR("Failed to print to buffer: %d", err);
-	}   
+ 
 }
 
 static void gnss_event_handler(int event)
@@ -200,10 +181,7 @@ static void gnss_event_handler(int event)
 			return;
 		} 
 		/* STEP 5.1 - Check for the flag indicating insufficient time window */
-		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME)
-		{
-			LOG_INF("Insufficient GNSS time windows");
-		}
+
 		break;
 
 	case NRF_MODEM_GNSS_EVT_PERIODIC_WAKEUP:
@@ -213,12 +191,7 @@ static void gnss_event_handler(int event)
 		LOG_INF("GNSS enter sleep after fix");
 		break;
 	/* STEP 5.2 - Print to console when GNSS is blocked and unblocked by LTE */
-	case NRF_MODEM_GNSS_EVT_BLOCKED:
-		LOG_INF("GNSS blocked by LTE event");
-		break;	
-	case NRF_MODEM_GNSS_EVT_UNBLOCKED:
-		LOG_INF("GNSS unblocked by LTE event");
-		break;			
+		
 	default:
 		break;
 	}
@@ -228,10 +201,7 @@ static int gnss_init_and_start(void)
 {
 	
 	/* STEP 4 - Set the modem mode to normal */
-	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL) != 0) {
-		LOG_ERR("Failed to activate GNSS functional mode");
-		return -1;
-	}
+
 
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
 		LOG_ERR("Failed to set GNSS event handler");
@@ -262,17 +232,7 @@ static int gnss_init_and_start(void)
 static void button_handler(uint32_t button_state, uint32_t has_changed) 
 {
 	/* STEP 3.3 - Upon button 1 push, send gps_data */
-	switch (has_changed) {
-	case DK_BTN1_MSK:
-		if (button_state & DK_BTN1_MSK){	
-			int err = send(sock, &gps_data, sizeof(gps_data), 0);
-			if (err < 0) {
-				LOG_INF("Failed to send message, %d", errno);
-				return;	
-			}
-		}
-		break;
-	}
+
 }
 
 void main(void)
