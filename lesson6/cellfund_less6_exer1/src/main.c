@@ -72,11 +72,9 @@ static void gnss_event_handler(int event)
 	int err;
 
 	switch (event) {
-	/* STEP 7 - On a PVT event, confirm if PVT data is a valid fix */
-	case NRF_MODEM_GNSS_EVT_PVT:
+	/* STEP 7.1 - On a PVT event, confirm if PVT data is a valid fix */
 
-		break;
-	/* STEP 16 - Log when the GNSS sleeps and wakes up */	
+	/* STEP 7.2 - Log when the GNSS sleeps and wakes up */	
 	default:
 		break;
 	}

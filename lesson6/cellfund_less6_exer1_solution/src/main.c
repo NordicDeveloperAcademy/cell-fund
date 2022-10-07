@@ -108,7 +108,7 @@ static void gnss_event_handler(int event)
 			return;
 		}
 		break;
-	/* STEP 16 - Log when the GNSS sleeps and wakes up */
+	/* STEP 7.2 - Log when the GNSS sleeps and wakes up */
 	case NRF_MODEM_GNSS_EVT_PERIODIC_WAKEUP:
 		LOG_INF("GNSS has woken up");
 		break;
