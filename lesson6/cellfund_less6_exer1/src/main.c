@@ -76,6 +76,7 @@ static void gnss_event_handler(int event)
 	case NRF_MODEM_GNSS_EVT_PVT:
 
 		break;
+	/* STEP 16 - Log when the GNSS sleeps and wakes up */	
 	default:
 		break;
 	}

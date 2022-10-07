@@ -17,7 +17,7 @@
 
 static K_SEM_DEFINE(lte_connected, 0, 1);
 
-/* STEP 5.2 - Define the PVT data frame variable */
+/* STEP 5 - Define the PVT data frame variable */
 static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
 /* STEP 12.1 - Declare helper variables to find the TTFF */
@@ -107,7 +107,13 @@ static void gnss_event_handler(int event)
 			}
 			return;
 		}
-		
+		break;
+	/* STEP 16 - Log when the GNSS sleeps and wakes up */
+	case NRF_MODEM_GNSS_EVT_PERIODIC_WAKEUP:
+		LOG_INF("GNSS has woken up");
+		break;
+	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_FIX:
+		LOG_INF("GNSS enter sleep after fix");
 		break;
 	default:
 		break;
