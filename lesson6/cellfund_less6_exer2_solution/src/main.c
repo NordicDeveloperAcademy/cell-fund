@@ -199,9 +199,10 @@ static void gnss_event_handler(int event)
 			}
 			return;
 		} 
-		/* STEP 5.1 - Check for the flag indicating insufficient time window */
-		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME)
-		{
+		/* STEP 5 - Check for the flags indicating GNSS is blocked */		
+		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_DEADLINE_MISSED) {
+			LOG_INF("GNSS blocked by LTE activity");
+		} else if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME) {
 			LOG_INF("Insufficient GNSS time windows");
 		}
 		break;
@@ -211,14 +212,7 @@ static void gnss_event_handler(int event)
 		break;
 	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_FIX:
 		LOG_INF("GNSS enter sleep after fix");
-		break;
-	/* STEP 5.2 - Print to console when GNSS is blocked and unblocked by LTE */
-	case NRF_MODEM_GNSS_EVT_BLOCKED:
-		LOG_INF("GNSS blocked by LTE event");
-		break;	
-	case NRF_MODEM_GNSS_EVT_UNBLOCKED:
-		LOG_INF("GNSS unblocked by LTE event");
-		break;			
+		break;		
 	default:
 		break;
 	}

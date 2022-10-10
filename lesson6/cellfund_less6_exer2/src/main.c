@@ -180,7 +180,7 @@ static void gnss_event_handler(int event)
 			}
 			return;
 		} 
-		/* STEP 5.1 - Check for the flag indicating insufficient time window */
+		/* STEP 5 - Check for the flags indicating GNSS is blocked */	
 
 		break;
 
@@ -189,9 +189,7 @@ static void gnss_event_handler(int event)
 		break;
 	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_FIX:
 		LOG_INF("GNSS enter sleep after fix");
-		break;
-	/* STEP 5.2 - Print to console when GNSS is blocked and unblocked by LTE */
-		
+		break;		
 	default:
 		break;
 	}
