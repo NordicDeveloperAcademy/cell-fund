@@ -319,7 +319,7 @@ void main(void)
 			LOG_ERR("Socket error: %d, exit\n", errno);
 			break;
 		}
-		}
+		
 		if (received == 0) {
 			LOG_INF("Empty datagram\n");
 			continue;
