@@ -328,10 +328,6 @@ void main(void)
 
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
 		if (received < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				LOG_ERR("socket EAGAIN\n");
-				continue;
-			} else {
 				LOG_ERR("Socket error:  %d, exit\n", errno);
 				break;
 			}
