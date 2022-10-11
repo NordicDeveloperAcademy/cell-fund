@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menu "cellfund Lesson 6 Exercise 1"
+menu "cellfund Lesson 6 Exercise"
 
 
 # STEP 3.1 - Define configuration for fix interval

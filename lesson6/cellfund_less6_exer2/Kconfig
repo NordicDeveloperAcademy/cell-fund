@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menu "cellfund Lesson 6 Exercise 2"
+menu "cellfund Lesson 6 Exercise"
 
 config GNSS_PERIODIC_INTERVAL
 	int "Fix interval for periodic GPS fixes"
