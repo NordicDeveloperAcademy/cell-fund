@@ -35,7 +35,7 @@ static int sock;
 static struct sockaddr_storage server;
 static uint8_t recv_buf[MESSAGE_SIZE];
 
-LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Lesson6_Exercise2, LOG_LEVEL_INF);
 
 static int server_resolve(void)
 {
@@ -88,6 +88,7 @@ static int client_init(void)
 		LOG_ERR("Connect failed : %d", errno);
 		return -errno;
 	}
+	LOG_INF("Successfully connected");
 
 	return 0;
 }
@@ -122,7 +123,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 	case LTE_LC_EVT_EDRX_UPDATE:
 		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
 			evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
-		break;				
+		break;
 	default:
 		break;
 	}

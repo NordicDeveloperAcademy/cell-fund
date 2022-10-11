@@ -88,7 +88,8 @@ static int client_init(void)
 		LOG_ERR("Connect failed : %d", errno);
 		return -errno;
 	}
-
+	LOG_INF("Successfully connected");
+	
 	return 0;
 }
 
