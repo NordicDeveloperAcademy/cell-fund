@@ -5,14 +5,15 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/random/rand32.h>
 #include <zephyr/net/coap.h>
-#include <modem/lte_lc.h>
+
+#include <logging/log>
 #include <dk_buttons_and_leds.h>
+#include <modem/lte_lc.h>
 
 /* STEP 4.2 - Include the header files for the modem key management library
 /* and TLS credentials API */
@@ -35,7 +36,9 @@ static uint8_t coap_buf[APP_COAP_MAX_MSG_LEN];
 static uint16_t next_token;
 static int sock;
 static struct sockaddr_storage server;
+
 K_SEM_DEFINE(lte_connected, 0, 1);
+
 LOG_MODULE_REGISTER(Lesson5_Exercise1, LOG_LEVEL_INF);
 
 /* STEP 9.3 - Define the handler for the work item */
@@ -81,33 +84,6 @@ static int server_resolve(void)
 	return 0;
 }
 
-static void lte_handler(const struct lte_lc_evt *const evt)
-{
-     switch (evt->type) {
-     case LTE_LC_EVT_NW_REG_STATUS:
-             if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
-             (evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
-                     break;
-             }
-
-             LOG_INF("Connected to: %s network",
-             evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ? "home" : "roaming");
-			 k_sem_give(&lte_connected);
-             break;
-     default:
-             break;
-     }
-}
-
-static void modem_configure(void)
-{
-	int err = lte_lc_init_and_connect_async(lte_handler);
-	if (err) {
-		LOG_INF("Modem could not be configured, error: %d", err);
-		return;
-	}
-}
-
 /**@brief Initialize the CoAP client */
 static int client_init(void)
 {
@@ -131,10 +107,48 @@ static int client_init(void)
 		return -errno;
 	}
 
+	LOG_INF("Successfully connected to server");
+
 	/* Randomize token. */
 	next_token = sys_rand32_get();
 
 	return 0;
+}
+
+static void lte_handler(const struct lte_lc_evt *const evt)
+{
+     switch (evt->type) {
+     case LTE_LC_EVT_NW_REG_STATUS:
+        if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
+            (evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
+            break;
+        }
+		LOG_INF("Network registration status: %s",
+				evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ?
+				"Connected - home network" : "Connected - roaming");
+		k_sem_give(&lte_connected);
+        break;
+	case LTE_LC_EVT_RRC_UPDATE:
+		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
+				"Connected" : "Idle");
+		break;				 
+     default:
+             break;
+     }
+}
+
+static void modem_configure(void)
+{
+	LOG_INF("Connecting to LTE network"); 
+	
+	int err = lte_lc_init_and_connect_async(lte_handler);
+	if (err) {
+		LOG_INF("Modem could not be configured, error: %d", err);
+		return;
+	}
+	k_sem_take(&lte_connected, K_FOREVER);
+	LOG_INF("Connected to LTE network");
+	dk_set_led_on(DK_LED2);
 }
 
 /**@biref Send CoAP GET request. */
@@ -297,28 +311,26 @@ void main(void)
 
 	/* STEP 8.2 - Write the PSK to the modem */
 
+	if (dk_leds_init() != 0) {
+		LOG_ERR("Failed to initialize the LED library");
+	}
+
 	modem_configure();
-	LOG_INF("Connecting to LTE network, this may take several minutes...");
-	k_sem_take(&lte_connected, K_FOREVER);	
-	err = dk_buttons_init(button_handler);
-	if (err){
-		LOG_ERR("Failed to initlize the Buttons Library");
+
+	if (dk_buttons_init(button_handler) != 0) {
+		LOG_ERR("Failed to initialize the buttons library");
 	}
-	err = dk_leds_init();
-	if (err){
-		LOG_ERR("Failed to initlize the LEDs Library");
-	}
-	dk_set_led_on(DK_LED2);	
 
 	if (server_resolve() != 0) {
-		LOG_ERR("Failed to resolve server name\n");
+		LOG_INF("Failed to resolve server name");
+		return;
+	}
+	
+	if (client_init() != 0) {
+		LOG_INF("Failed to initialize client");
 		return;
 	}
 
-	if (client_init() != 0) {
-		LOG_ERR("Failed to initialize CoAP client\n");
-		return;
-	}
 	/* STEP 9.4 - Initialize the work item rx_work with the handler function */
 
 
@@ -327,6 +339,7 @@ void main(void)
 
 
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
+
 		if (received < 0) {
 				LOG_ERR("Socket error:  %d, exit\n", errno);
 				break;
@@ -343,8 +356,6 @@ void main(void)
 			LOG_ERR("Invalid response, exit\n");
 			break;
 		}
-		
 	}
-
 	(void)close(sock);
 }

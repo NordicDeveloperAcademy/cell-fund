@@ -50,10 +50,6 @@ config TURN_LED_OFF_CMD
 	string "Command to turn off LED"
 	default "LED1OFF"
 
-config BUTTON_EVENT_BTN_NUM
-	int "The button number"
-	default 1
-
 config MQTT_RECONNECT_DELAY_S
 	int "Seconds to delay before attempting to reconnect to the broker."
 	default 60

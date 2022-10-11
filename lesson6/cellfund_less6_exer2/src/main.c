@@ -5,23 +5,18 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-
-#include <logging/log.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
 
-#include <modem/lte_lc.h>
+#include <logging/log.h>
 #include <dk_buttons_and_leds.h>
+#include <modem/lte_lc.h>
 #include <nrf_modem_gnss.h>
-
 #define SERVER_HOSTNAME "nordicecho.westeurope.cloudapp.azure.com"
 #define SERVER_PORT "2444"
 
 #define MESSAGE_SIZE 256 
 #define MESSAGE_TO_SEND "Hello"
-
-static K_SEM_DEFINE(lte_connected, 0, 1);
 
 static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
@@ -34,6 +29,8 @@ static bool first_fix = false;
 static int sock;
 static struct sockaddr_storage server;
 static uint8_t recv_buf[MESSAGE_SIZE];
+
+static K_SEM_DEFINE(lte_connected, 0, 1);
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
@@ -239,23 +236,26 @@ void main(void)
 
 	int err, received;
 	
-	err = dk_leds_init();
-	if (err){
-		LOG_ERR("Failed to initialize the LEDs Library");
+	if (dk_leds_init() != 0) {
+		LOG_ERR("Failed to initialize the LED library");
 	}
+
 	modem_configure();
 
-	err = dk_buttons_init(button_handler);
+	if (dk_buttons_init(button_handler) != 0) {
+		LOG_ERR("Failed to initialize the buttons library");
+	}
 
 	if (server_resolve() != 0) {
-		LOG_ERR("Failed to resolve server name");
+		LOG_INF("Failed to resolve server name");
 		return;
 	}
-
-	if (client_init() != 0) {
-		LOG_ERR("Failed to initialize client");
+	
+	if (server_connect() != 0) {
+		LOG_INF("Failed to initialize client");
 		return;
 	}
+	
 	if (gnss_init_and_start() != 0) {
 		LOG_ERR("Failed to initialize and start GNSS");
 		return;

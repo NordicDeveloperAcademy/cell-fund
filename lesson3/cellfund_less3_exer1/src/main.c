@@ -78,11 +78,9 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 static void modem_configure(void)
 {
-	int err;
-	
 	LOG_INF("Connecting to LTE network"); 
 	
-	err = lte_lc_init_and_connect_async(lte_handler);
+	int err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_INF("Modem could not be configured, error: %d", err);
 		return;

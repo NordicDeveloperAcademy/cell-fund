@@ -32,7 +32,6 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				"Connected - home network" : "Connected - roaming");
 		k_sem_give(&lte_connected);
 		break;
-	
 	case LTE_LC_EVT_RRC_UPDATE:
 		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
 				"Connected" : "Idle");

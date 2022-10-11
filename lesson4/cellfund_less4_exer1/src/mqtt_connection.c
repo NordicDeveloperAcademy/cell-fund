@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 #include <zephyr/random/rand32.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/mqtt.h>
 
+#include <logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include "mqtt_connection.h"
 

@@ -5,9 +5,8 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-
 #include <zephyr/kernel.h>
+
 #include <logging/log.h>
 #include <modem/lte_lc.h>
 #include <dk_buttons_and_leds.h>
@@ -15,14 +14,14 @@
 /* STEP 4 - Include the header file for the GNSS interface */
 #include <nrf_modem_gnss.h>
 
-static K_SEM_DEFINE(lte_connected, 0, 1);
-
 /* STEP 5 - Define the PVT data frame variable */
 static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
 /* STEP 12.1 - Declare helper variables to find the TTFF */
 static int64_t gnss_start_time;
 static bool first_fix = false;
+
+static K_SEM_DEFINE(lte_connected, 0, 1);
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
@@ -50,12 +49,13 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 static void modem_configure(void)
 {
+	LOG_INF("Connecting to LTE network");
+
 	int err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_ERR("Modem could not be configured, error: %d", err);
 		return;
 	}
-	LOG_INF("Connecting to LTE network");
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
 	dk_set_led_on(DK_LED2);
