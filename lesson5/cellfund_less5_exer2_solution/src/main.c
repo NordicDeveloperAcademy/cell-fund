@@ -138,7 +138,7 @@ static int client_init(void)
 		return -errno;
 	}
 	
-	/* STEP 7.2 - Set the TLS hostname */
+	/* STEP 7.2 - Set the DTLS hostname. */
 	err = setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_COAP_SERVER_HOSTNAME,
 		 strlen(CONFIG_COAP_SERVER_HOSTNAME));
 	if (err) {
