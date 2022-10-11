@@ -316,14 +316,10 @@ void main(void)
 		/* STEP 11 - Receive response from the CoAP server */
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
 		if (received < 0) {
-			if (errno == EAGAIN || errno == EWOULDBLOCK) {
-				LOG_ERR("Socket EAGAIN\n");
-				continue;
-			} else {
-				LOG_ERR("Socket error: %d, exit\n", errno);
-				break;
-			}
+			LOG_ERR("Socket error: %d, exit\n", errno);
+			break;
 		}
+		
 		if (received == 0) {
 			LOG_INF("Empty datagram\n");
 			continue;
