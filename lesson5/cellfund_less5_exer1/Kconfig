@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menu "nRF CoAP client sample"
+menu "Cellfund Lesson 5 Exercise"
 
 config COAP_SERVER_HOSTNAME
 	string "CoAP server hostname"

@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
-menu "MQTT Exercise Options"
+menu "Cellfund Lesson 4 Exercise"
+
 config MQTT_PUB_TOPIC
 	string "MQTT publish topic"
 	default "devacademy/publish/topic"
