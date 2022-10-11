@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2022 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clausee
+ * Th
  */
 
 #include <stdio.h>
@@ -20,27 +21,24 @@
 #define APP_COAP_SEND_INTERVAL_MS 60000
 #define APP_COAP_MAX_MSG_LEN 1280
 #define APP_COAP_VERSION 1
-#define SLEEP_TIME_MS   60*1000
 static int sock;
 static struct sockaddr_storage server;
 static uint16_t next_token;
 K_SEM_DEFINE(lte_connected, 0, 1);
-K_SEM_DEFINE(pvt_data_sem, 0, 1);
-K_SEM_DEFINE(active_time, 0, 1);
+K_SEM_DEFINE(gnss_fix_sem, 0, 1);
 LOG_MODULE_REGISTER(Cellfund_Project, LOG_LEVEL_INF);
 static uint8_t coap_buf[APP_COAP_MAX_MSG_LEN];
-//static uint8_t coap_sendbug[128];
 static uint8_t coap_sendbug[64];
 static struct nrf_modem_gnss_pvt_data_frame current_pvt;
 static struct nrf_modem_gnss_pvt_data_frame last_pvt;
-static enum tracker_status {status_searching =DK_LED2 , status_connected_nopsm = DK_LED1,status_fixed = DK_LED3}; 
-static enum tracker_status device_status; 
+static enum tracker_status {status_nolte = DK_LED1, status_searching = DK_LED2, status_fixed = DK_LED3} device_status; 
+static int resolve_address_lock = 0;
 static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
-	printf("Latitude:       %.06f\n", pvt_data->latitude);
-	printf("Longitude:      %.06f\n", pvt_data->longitude);
-	printf("Altitude:       %.01f m\n", pvt_data->altitude);
-	printf("Time (UTC):     %02u:%02u:%02u.%03u\n",
+	printk("Latitude:       %.06f\n", pvt_data->latitude);
+	printk("Longitude:      %.06f\n", pvt_data->longitude);
+	printk("Altitude:       %.01f m\n", pvt_data->altitude);
+	printk("Time (UTC):     %02u:%02u:%02u.%03u\n",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,
 	       pvt_data->datetime.seconds,
@@ -52,53 +50,78 @@ static void gnss_event_handler(int event)
 	int retval;
 	switch (event) {
 	case NRF_MODEM_GNSS_EVT_PVT:
-		retval = nrf_modem_gnss_read(&last_pvt, sizeof(last_pvt), NRF_MODEM_GNSS_DATA_PVT);
-		printk("Searching....\n\r");
-		if(device_status!=status_fixed){
-			device_status = status_searching;
-		}
-		if ((retval == 0) && (last_pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID)){
-			device_status=status_fixed;
-			current_pvt=last_pvt;
-			print_fix_data(&current_pvt);
-			k_sem_give(&pvt_data_sem);
-		}
+		LOG_INF("Searching for GNSS Satellites....\n\r");
+		device_status = status_searching;
+		break;
+	case NRF_MODEM_GNSS_EVT_FIX:
+		LOG_INF("GNSS fix event\n\r");
+		break;
+	case NRF_MODEM_GNSS_EVT_PERIODIC_WAKEUP:
+		LOG_INF("GNSS woke up in periodic mode\n\r");
 		break;
 	case NRF_MODEM_GNSS_EVT_BLOCKED:
-		printk("GNSS is blocked by LTE event\n\r");
+		LOG_INF("GNSS is blocked by LTE event\n\r");
+		break;
+	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_FIX:
+		LOG_INF("GNSS enters sleep because fix was achieved in periodic mode\n\r");
+		device_status = status_fixed;
+		retval = nrf_modem_gnss_read(&last_pvt, sizeof(last_pvt), NRF_MODEM_GNSS_DATA_PVT);
+		if (retval == 0){
+			current_pvt = last_pvt;
+			print_fix_data(&current_pvt);
+			k_sem_give(&gnss_fix_sem);
+		}
+		break;
+	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_TIMEOUT:
+		LOG_INF("GNSS enters sleep because fix retry timeout was reached\n\r");
+		break;
+		
 	default:
+	
 		break;
 	}
 }
 
 static int gnss_init_and_start(void)
 {
-	/* Enable GNSS. */		
-	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL) != 0) {
-		printk("Failed to activate GNSS functional mode");
+#if defined(CONFIG_GNSS_HIGH_ACCURACY_TIMING_SOURCE)
+	if (nrf_modem_gnss_timing_source_set(NRF_MODEM_GNSS_TIMING_SOURCE_TCXO)){
+		LOG_ERR("Failed to set TCXO timing source");
 		return -1;
 	}
-	/* Configure GNSS. */
+#endif
+#if defined(CONFIG_GNSS_LOW_ACCURACY) || defined (CONFIG_BOARD_THINGY91_NRF9160_NS)
+	uint8_t use_case;
+	use_case = NRF_MODEM_GNSS_USE_CASE_MULTIPLE_HOT_START | NRF_MODEM_GNSS_USE_CASE_LOW_ACCURACY;
+	if (nrf_modem_gnss_use_case_set(use_case) != 0) {
+		LOG_ERR("Failed to set low accuracy use case");
+		return -1;
+	}
+#endif
+	/* Configure GNSS event handler . */
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
-		printk("Failed to set GNSS event handler");
+		LOG_ERR("Failed to set GNSS event handler");
 		return -1;
 	}
 
 	if (nrf_modem_gnss_fix_interval_set(CONFIG_TRACKER_PERIODIC_INTERVAL) != 0) {
-		printk("Failed to set GNSS fix interval");
+		LOG_ERR("Failed to set GNSS fix interval");
 		return -1;
 	}
 
 	if (nrf_modem_gnss_fix_retry_set(CONFIG_TRACKER_PERIODIC_TIMEOUT) != 0) {
-		printk("Failed to set GNSS fix retry");
+		LOG_ERR("Failed to set GNSS fix retry");
 		return -1;
 	}
 
 	if (nrf_modem_gnss_start() != 0) {
-		printk("Failed to start GNSS");
+		LOG_ERR("Failed to start GNSS");
 		return -1;
 	}
-
+	if (nrf_modem_gnss_prio_mode_enable() != 0){
+		LOG_ERR("Error setting GNSS priority mode");
+		return -1;
+	}	
 	return 0;
 }
 	
@@ -115,12 +138,12 @@ static int server_resolve(void)
 
 	err = getaddrinfo(CONFIG_COAP_SERVER_HOSTNAME, NULL, &hints, &result);
 	if (err != 0) {
-		printk("ERROR: getaddrinfo failed %d\n", err);
+		LOG_ERR("ERROR: getaddrinfo failed %d\n", err);
 		return -EIO;
 	}
 
 	if (result == NULL) {
-		printk("ERROR: Address not found\n");
+		LOG_ERR("ERROR: Address not found\n");
 		return -ENOENT;
 	}
 
@@ -134,7 +157,7 @@ static int server_resolve(void)
 
 	inet_ntop(AF_INET, &server4->sin_addr.s_addr, ipv4_addr,
 		  sizeof(ipv4_addr));
-	printk("IPv4 Address found %s\n", ipv4_addr);
+	LOG_INF("IPv4 Address found %s\n", ipv4_addr);
 
 	/* Free the address. */
 	freeaddrinfo(result);
@@ -149,7 +172,7 @@ static int server_connect(void)
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_DTLS_1_2);
 	if (sock < 0) {
-		printk("Failed to create CoAP socket: %d.\n", errno);
+		LOG_ERR("Failed to create CoAP socket: %d.\n", errno);
 		return -errno;
 	}
 
@@ -166,30 +189,29 @@ static int server_connect(void)
 
 	err = setsockopt(sock, SOL_TLS, TLS_PEER_VERIFY, &verify, sizeof(verify));
 	if (err) {
-		printk("Failed to setup peer verification, errno %d\n", errno);
+		LOG_ERR("Failed to setup peer verification, errno %d\n", errno);
 		return -errno;
 	}
 
 	err = setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_COAP_SERVER_HOSTNAME,
 		 strlen(CONFIG_COAP_SERVER_HOSTNAME));
 	if (err) {
-		printk("Failed to setup TLS hostname (%s), errno %d\n",
+		LOG_ERR("Failed to setup TLS hostname (%s), errno %d\n",
 			CONFIG_COAP_SERVER_HOSTNAME, errno);
 		return -errno;
 	}
 
-	printk("Setting up TLS credentials, tag %d. Size: %d\n", 12, ARRAY_SIZE(sec_tag_list));
 	err = setsockopt(sock, SOL_TLS, TLS_SEC_TAG_LIST, sec_tag_list,
 			 sizeof(sec_tag_t) * ARRAY_SIZE(sec_tag_list));
 	if (err) {
-		printk("Failed to setup socket security tag, errno %d\n", errno);
+		LOG_ERR("Failed to setup socket security tag, errno %d\n", errno);
 		return -errno;
 	}
 	
 	err = connect(sock, (struct sockaddr *)&server,
 		      sizeof(struct sockaddr_in));
 	if (err < 0) {
-		printk("Connect failed : %d\n", errno);
+		LOG_ERR("Connect failed : %d\n", errno);
 		return -errno;
 	}
 
@@ -208,11 +230,11 @@ static int client_handle_get_response(uint8_t *buf, int received)
 	uint16_t payload_len;
 	uint8_t token[8];
 	uint16_t token_len;
-	uint8_t temp_buf[16];
+	static uint8_t temp_buf[128];
 
 	err = coap_packet_parse(&reply, buf, received, NULL, 0);
 	if (err < 0) {
-		printk("Malformed response received: %d\n", err);
+		LOG_ERR("Malformed response received: %d\n", err);
 		return err;
 	}
 
@@ -221,20 +243,19 @@ static int client_handle_get_response(uint8_t *buf, int received)
 
 	if ((token_len != sizeof(next_token)) ||
 	    (memcmp(&next_token, token, sizeof(next_token)) != 0)) {
-		printk("Invalid token received: 0x%02x%02x\n",
+		LOG_ERR("Invalid token received: 0x%02x%02x\n",
 		       token[1], token[0]);
 		return 0;
 	}
 
 	if (payload_len > 0) {
-		snprintf(temp_buf, MIN(payload_len, sizeof(temp_buf)), "%s", payload);
+		snprintf(temp_buf, MIN(payload_len + 1, sizeof(temp_buf)), "%s", payload);
 	} else {
 		strcpy(temp_buf, "EMPTY");
 	}
 
-	printk("CoAP response: code: 0x%x, token 0x%02x%02x, payload: %s\n",
+	LOG_INF("CoAP response: Code 0x%x, Token 0x%02x%02x, Payload: %s",
 	       coap_header_get_code(&reply), token[1], token[0], temp_buf);
-
 	return 0;
 }
 
@@ -247,20 +268,14 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 			break;
 		}
 
-		printk("Network registration status: %s\n",
+		LOG_INF("Network registration status: %s\n",
 			evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ?
 			"Connected - home network" : "Connected - roaming\n");
 		k_sem_give(&lte_connected);
 		break;
 	case LTE_LC_EVT_PSM_UPDATE:
-		printk("PSM parameter update: TAU: %d, Active time: %d\n",
+		LOG_INF("PSM parameter update: TAU: %d, Active time: %d\n",
 			evt->psm_cfg.tau, evt->psm_cfg.active_time);
-		if (evt->psm_cfg.active_time == -1){
-			int ret; 
-			printk("Network rejected PSM parameters. Failed to setup newtork...\n");
-		}else {
-			k_sem_give(&active_time);
-		}
 		break;
 	case LTE_LC_EVT_EDRX_UPDATE: {
 		char log_buf[60];
@@ -270,17 +285,17 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 			       "eDRX parameter update: eDRX: %f, PTW: %f\n",
 			       evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
 		if (len > 0) {
-			printk("%s\n", log_buf);
+			LOG_INF("%s\n", log_buf);
 		}
 		break;
 	}
 	case LTE_LC_EVT_RRC_UPDATE:
-		printk("RRC mode: %s\n",
+		LOG_INF("RRC mode: %s\n",
 			evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
 			"Connected" : "Idle\n");
 		break;
 	case LTE_LC_EVT_CELL_UPDATE:
-		printk("LTE cell changed: Cell ID: %d, Tracking area: %d\n",
+		LOG_INF("LTE cell changed: Cell ID: %d, Tracking area: %d\n",
 		       evt->cell.id, evt->cell.tac);
 		break;
 	default:
@@ -288,18 +303,19 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 	}
 }
 
+
 static void modem_configure(void)
 {
 	int err;
-	
-	err = lte_lc_psm_req(true);
-	if (err) {
-		printk("lte_lc_psm_req, error: %d\n", err);
-	} 
 
 	err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
-		LOG_INF("Modem could not be configured, error: %d", err);
+		LOG_ERR("Modem could not be configured, error: %d", err);
+		return;
+	}
+	/* Decativate LTE and enable GNSS. */		
+	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE) != 0) {
+		LOG_ERR("Failed to decativate LTE and enable GNSS functional mode");
 		return;
 	}
 }
@@ -317,7 +333,7 @@ static int client_post_send(void)
 			       sizeof(next_token), (uint8_t *)&next_token,
 			       COAP_METHOD_POST, coap_next_id());
 	if (err < 0) {
-		printk("Failed to create CoAP request, %d\n", err);
+		LOG_ERR("Failed to create CoAP request, %d\n", err);
 		return err;
 	}
 
@@ -325,14 +341,14 @@ static int client_post_send(void)
 					(uint8_t *)CONFIG_COAP_POST_RESOURCE,
 					strlen(CONFIG_COAP_POST_RESOURCE));
 	if (err < 0) {
-		printk("Failed to encode CoAP option, %d\n", err);
+		LOG_ERR("Failed to encode CoAP option, %d\n", err);
 		return err;
 	}
 
    err = coap_append_option_int(&request, COAP_OPTION_CONTENT_FORMAT,
                                 COAP_CONTENT_FORMAT_TEXT_PLAIN);
    if (err < 0) {
-      printk("Failed to encode CoAP CONTENT_FORMAT option, %d", err);
+      LOG_ERR("Failed to encode CoAP CONTENT_FORMAT option, %d", err);
       return err;
    }
 
@@ -340,36 +356,36 @@ static int client_post_send(void)
                                    (uint8_t *)"keep",
                                    strlen("keep"));
    if (err < 0) {
-      printk("Failed to encode CoAP URI-QUERY option 'keep', %d", err);
+      LOG_ERR("Failed to encode CoAP URI-QUERY option 'keep', %d", err);
       return err;
    }
 
 	err = coap_packet_append_payload_marker(&request);
 	if (err < 0) {
-		printk("Failed to append payload marker, %d\n", err);
+		LOG_ERR("Failed to append payload marker, %d\n", err);
 		return err;
 	}
-   //current_pvt.longitude++; /* REMOVE - THIS IS ADDED TO NOT SHOW MY LOCATION PUBLICLY */ 
+
    ret = snprintf (coap_sendbug, sizeof(coap_sendbug), "%.06f,%.06f\n%.01f m\n%04u-%02u-%02u %02u:%02u:%02u", 
    current_pvt.latitude, current_pvt.longitude,current_pvt.accuracy,current_pvt.datetime.year,current_pvt.datetime.month,current_pvt.datetime.day,
-    current_pvt.datetime.hour, current_pvt.datetime.minute, last_pvt.datetime.seconds);
+   current_pvt.datetime.hour, current_pvt.datetime.minute, last_pvt.datetime.seconds);
 	if (err < 0) {
-		printk("snprintf failed to format string, %d\n", err);
+		LOG_ERR("snprintf failed to format string, %d\n", err);
 		return err;
 	}
 	err = coap_packet_append_payload(&request, (uint8_t *)coap_sendbug, ret);
 	if (err < 0) {
-		printk("Failed to append payload, %d\n", err);
+		LOG_ERR("Failed to append payload, %d\n", err);
 		return err;
 	}
 
 	err = send(sock, request.data, request.offset, 0);
 	if (err < 0) {
-		printk("Failed to send CoAP request, %d\n", errno);
+		LOG_ERR("Failed to send CoAP request, %d\n", errno);
 		return -errno;
 	}
 
-	printk("CoAP request sent: token 0x%04x\n", next_token);
+	LOG_INF("CoAP request sent: token 0x%04x\n", next_token);
 
 	return 0;
 }
@@ -391,48 +407,56 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 void main(void)
 {
 	int err, received;
-	printk("The nRF91 Simple Tracker Version %d.%d.%d started\n",CONFIG_TRACKER_VERSION_MAJOR,CONFIG_TRACKER_VERSION_MINOR,CONFIG_TRACKER_VERSION_PATCH);
+	LOG_INF("The nRF91 Simple Tracker Version %d.%d.%d started\n",CONFIG_TRACKER_VERSION_MAJOR,CONFIG_TRACKER_VERSION_MINOR,CONFIG_TRACKER_VERSION_PATCH);
 
 	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY, CONFIG_COAP_DEVICE_NAME, strlen(CONFIG_COAP_DEVICE_NAME));
 	if (err) {
-		printk("Failed to write identity: %d\n", err);
+		LOG_ERR("Failed to write identity: %d\n", err);
 		return;
 	}
 
 	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK, strlen(CONFIG_COAP_SERVER_PSK));
 	if (err) {
-		printk("Failed to write identity: %d\n", err);
+		LOG_ERR("Failed to write identity: %d\n", err);
 		return;
 	}
 	err = dk_leds_init();
 	if (err){
 		LOG_ERR("Failed to initlize the LEDs Library");
 	}
+	device_status = status_nolte;
 	modem_configure();
-	LOG_INF("Connecting to LTE network, this may take several minutes...");
-	k_sem_take(&lte_connected, K_FOREVER);
-	device_status = status_connected_nopsm;	
 	err = dk_buttons_init(button_handler);
 	if (err) {
-		printk("Failed to init button handler: %d\n", err);
+		LOG_ERR("Failed to initlize button handler: %d\n", err);
 		return;
 	}
-
-	if (server_resolve() != 0) {
-		printk("Failed to resolve server name\n");
-		return;
-	}
-	k_sem_take(&active_time, K_FOREVER);
+	LOG_INF("Starting GNSS....");
 	gnss_init_and_start();
 	while (1) {
-		k_sem_take(&pvt_data_sem, K_FOREVER);
+		k_sem_take(&gnss_fix_sem, K_FOREVER);
+		err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL);
+		if (err != 0){
+			LOG_ERR("Failed to activate LTE");
+			break;
+		}
+		k_sem_take(&lte_connected, K_FOREVER);
+		if (resolve_address_lock == 0){
+			LOG_INF("Resolving the server address\n\r");
+			if (server_resolve() != 0) {
+				LOG_ERR("Failed to resolve server name\n");
+					return;	
+			}
+			resolve_address_lock = 1;
+		}
+		LOG_INF("Sending Data over LTE\r\n");
 		if (server_connect() != 0) {
-		printk("Failed to initialize CoAP client\n");
-		return;
+			LOG_ERR("Failed to initialize CoAP client\n");
+			return;
 		}
 
 		if (client_post_send() != 0) {
-			printk("Failed to send GET request, exit...\n");
+			LOG_ERR("Failed to send GET request, exit...\n");
 			break;
 		}
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
@@ -443,18 +467,24 @@ void main(void)
 		}
 
 		if (received == 0) {
-			printk("Disconnected\n");
+			LOG_ERR("Disconnected\n");
 			break;
 		}
 		err = client_handle_get_response(coap_buf, received);
 		if (err < 0) {
-			printk("Invalid response, exit...\n");
+			LOG_ERR("Invalid response, exit...\n");
 			break;
 		}
 
 		(void)close(sock);
-		k_msleep(SLEEP_TIME_MS);
+		err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
+		if (err != 0){
+			LOG_ERR("Failed to decativate LTE and enable GNSS functional mode");
+			break;
 		}
-
+	}
+	device_status = status_nolte;
+	lte_lc_power_off();
+	LOG_ERR("Error occoured. Shutting down modem");
 
 }

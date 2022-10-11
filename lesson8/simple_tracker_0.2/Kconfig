@@ -12,11 +12,11 @@ config TRACKER_VERSION_MAJOR
 
 config TRACKER_VERSION_MINOR
 	int "Minor verison number"
-	default 1
+	default 2
 
 config TRACKER_VERSION_PATCH
 	int "Patch verison number"
-	default 0
+	default 1
 
 config COAP_DEVICE_NAME
 	string "Device resource name - this will be the device name on the CoAP server"
@@ -48,10 +48,21 @@ config TRACKER_PERIODIC_INTERVAL
 config TRACKER_PERIODIC_TIMEOUT
 	int "Fix timeout for periodic GPS fixes"
 	range 0 65535
-	default 480
+	default 600
 	help
 	  Fix timeout (in seconds) for periodic fixes.
 	  If set to zero, GNSS is allowed to run indefinitely until a valid PVT estimate is produced.
+
+config GNSS_LOW_ACCURACY
+	bool "Allow low accuracy fixes."
+	help
+	  Helps with faster fixes.GNSS demonstrates a looser acceptance criterion for a fix.
+
+config GNSS_HIGH_ACCURACY_TIMING_SOURCE
+	bool "Use Crystal oscillator"
+	help
+	  Use crystal oscillator (TCXO) timing source for the GNSS interface 
+	  instead of the default Real time clock (RTC).TCXO has higher power consumption than RTC
 
 endmenu
 
