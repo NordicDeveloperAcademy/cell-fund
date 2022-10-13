@@ -132,7 +132,7 @@ void main(void)
 	/* STEP 8 - Activate modem and deactivate LTE */
 	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL) != 0) {
 		LOG_ERR("Failed to activate GNSS functional mode");
-		return -1;
+		return;
 	}	
 	
 	LOG_INF("Deactivating LTE");

@@ -55,7 +55,7 @@ static int server_resolve(void)
 
 	/* STEP 6.2 - Retrieve the relevant information from the result structure*/
 	struct sockaddr_in *server4 = ((struct sockaddr_in *)&server);
-	
+
 	server4->sin_addr.s_addr =
 		((struct sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
 	server4->sin_family = AF_INET;
