@@ -19,7 +19,7 @@ LOG_MODULE_REGISTER(Lesson2_Exercise1, LOG_LEVEL_INF);
 static void lte_handler(const struct lte_lc_evt *const evt)
 {
 	switch (evt->type) {
-	/* STEP 7.1 - Define the callback function lte_handler()*/ 
+	/* STEP 7.1 - On changed registration status, print status */
 	case LTE_LC_EVT_NW_REG_STATUS:
 		if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
 			(evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
