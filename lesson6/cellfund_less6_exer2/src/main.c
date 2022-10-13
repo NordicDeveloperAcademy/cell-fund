@@ -32,7 +32,7 @@ static uint8_t recv_buf[MESSAGE_SIZE];
 
 static K_SEM_DEFINE(lte_connected, 0, 1);
 
-LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Lesson6_Exercise2, LOG_LEVEL_INF);
 
 static int server_resolve(void)
 {
@@ -234,7 +234,7 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 void main(void)
 {
 
-	int err, received;
+	int received;
 	
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LED library");
