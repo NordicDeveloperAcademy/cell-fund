@@ -20,21 +20,9 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 {
 	switch (evt->type) {
 	/* STEP 7.1 - On changed registration status, print status */
-	case LTE_LC_EVT_NW_REG_STATUS:
-		if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
-			(evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
-			break;
-		}
-		LOG_INF("Network registration status: %s",
-				evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ?
-				"Connected - home network" : "Connected - roaming");
-		k_sem_give(&lte_connected);
-		break;
+
 	/* STEP 7.2 - On event RRC update, print RRC mode */
-	case LTE_LC_EVT_RRC_UPDATE:
-		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
-				"Connected" : "Idle");
-		break;			
+		
 	default:
 		break;
 	}
@@ -57,5 +45,5 @@ void main(void)
 	LOG_INF("Connected to LTE network");
 
 	/* STEP 10 - Turn on the LED status LED */
-	dk_set_led_on(DK_LED2);
+
 }
