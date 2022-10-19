@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include <zephyr/kernel.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 
 /* STEP 4 - Include the header file of the LTE link controller library */
