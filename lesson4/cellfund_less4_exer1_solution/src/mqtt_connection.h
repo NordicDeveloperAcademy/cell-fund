@@ -4,7 +4,7 @@
 #define IMEI_LEN 15
 #define CGSN_RESPONSE_LENGTH (IMEI_LEN + 6 + 1) /* Add 6 for \r\nOK\r\n and 1 for \0 */
 #define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN
-#include <zephyr/net/mqtt.h>
+
 /**@brief Initialize the MQTT client structure
  */
 int client_init(struct mqtt_client *client);

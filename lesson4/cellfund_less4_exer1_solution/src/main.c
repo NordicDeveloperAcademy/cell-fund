@@ -8,15 +8,13 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include <modem/lte_lc.h>
-
-#include "mqtt_connection.h"
-
 /* STEP 2.3 - Include the header file for the MQTT Library*/
 #include <zephyr/net/mqtt.h>
 
+#include "mqtt_connection.h"
 
 /* The mqtt client struct */
 static struct mqtt_client client;
