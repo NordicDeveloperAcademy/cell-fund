@@ -90,21 +90,20 @@ static void modem_configure(void)
 	dk_set_led_on(DK_LED2);
 }
 
-static void button_handler(uint32_t button_states, uint32_t has_changed)
+static void button_handler(uint32_t button_state, uint32_t has_changed)
 {
 	switch (has_changed) {
 	case DK_BTN1_MSK:
 		/* STEP 9 - call send() when button 1 is pressed */
 
-		}
-		break;
-
+	break;
 	}
 }
 
+
 void main(void)
 {
-	int err, received;
+	int received;
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LED library");
