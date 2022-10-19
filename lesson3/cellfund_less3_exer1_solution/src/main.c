@@ -171,7 +171,7 @@ void main(void)
 		return;
 	}
 
-	LOG_INF("Press button 1 on your Development Kit or Thingy:91 to send your message");
+	LOG_INF("Press button 1 on your DK or Thingy:91 to send your message");
 
 		while (1) {
 			/* STEP 10 - Call recv() to listen to received messages */
