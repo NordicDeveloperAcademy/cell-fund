@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Nordic Semiconductor ASA
+ * Copyright (c) 2022 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
@@ -11,12 +11,11 @@
 #include <zephyr/random/rand32.h>
 #include <zephyr/net/coap.h>
 
-#include <logging/log>
+#include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include <modem/lte_lc.h>
 
-/* STEP 4.2 - Include the header files for the modem key management library
-/* and TLS credentials API */
+/* STEP 4.2 - Include the header files for the modem key management library and TLS credentials API */
 
 
 /* STEP 5 - Define the macros for the security tag */
@@ -41,7 +40,6 @@ K_SEM_DEFINE(lte_connected, 0, 1);
 
 LOG_MODULE_REGISTER(Lesson5_Exercise1, LOG_LEVEL_INF);
 
-/* STEP 9.3 - Define the handler for the work item */
 
 
 /**@brief Resolves the configured hostname. */
@@ -182,7 +180,7 @@ static int client_get_send(void)
 		return -errno;
 	}
 
-	LOG_ERR("CoAP GET request sent: Token 0x%04x\n", next_token);
+	LOG_INF("CoAP GET request sent: Token 0x%04x\n", next_token);
 
 	return 0;
 }
@@ -302,6 +300,8 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 	} 
 	#endif
 }
+
+/* STEP 9.3 - Define the handler for the work item */
 
 void main(void)
 {
