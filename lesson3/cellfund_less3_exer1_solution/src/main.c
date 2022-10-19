@@ -140,7 +140,7 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 			int err = send(sock, MESSAGE_TO_SEND, SSTRLEN(MESSAGE_TO_SEND), 0);
 			if (err < 0) {
 				LOG_INF("Failed to send message, %d", errno);
-				return;	
+				return;
 			}
 		}
 		break;
@@ -183,6 +183,7 @@ void main(void)
 			}
 
 			if (received == 0) {
+				LOG_ERR("Empty datagram");
 				break;
 			}
 
