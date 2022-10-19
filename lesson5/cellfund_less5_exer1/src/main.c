@@ -10,7 +10,7 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/random/rand32.h>
 
-#include <logging/log>
+#include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include <modem/lte_lc.h>
 
