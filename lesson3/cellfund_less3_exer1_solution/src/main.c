@@ -141,7 +141,7 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 			if (err < 0) {
 				LOG_INF("Failed to send message, %d", errno);
 				return;
-			}
+			} LOG_INF("Successfully sent message: %s", MESSAGE_TO_SEND);
 		}
 		break;
 	}
