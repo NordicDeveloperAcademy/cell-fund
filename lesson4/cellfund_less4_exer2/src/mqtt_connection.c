@@ -9,6 +9,7 @@
 
 #include <dk_buttons_and_leds.h>
 #include "mqtt_connection.h"
+#include <nrf_modem_at.h>
 
 /* STEP 2.4 - Include the header file for the modem key management library */
 
