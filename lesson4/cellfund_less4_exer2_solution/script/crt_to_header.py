@@ -1,4 +1,4 @@
-cer_file ="../server_certificate.cer"
+cer_file ="../server_certificate.crt"
 header_file="../src/certificate.h"
 macro_name = "CA_CERTIFICATE"
 
