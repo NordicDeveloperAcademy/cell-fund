@@ -1,0 +1,38 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Cellfund Lesson 5 Exercise"
+
+config COAP_SERVER_HOSTNAME
+	string "CoAP server hostname"
+
+config COAP_SERVER_PORT
+	int "CoAP server port"
+	default 5683
+
+config COAP_TX_RESOURCE
+	string "CoAP resource - this is the TX channel of the board"
+	default "large-update"
+
+config COAP_RX_RESOURCE
+	string "CoAP resource - this is the RX channel of the board"
+	default "validate"
+
+# STEP 2.1 - Define the PSK Identity configuration
+config COAP_DEVICE_NAME
+	string "Device resource name - this will be the device name on the CoAP server"
+	default "cali.test.nrf9160"
+
+# STEP 2.2 - Define the PSK Secret configuration	
+config COAP_SERVER_PSK
+	string "Server PSK"
+	default "2e666f726e69756d"
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu
