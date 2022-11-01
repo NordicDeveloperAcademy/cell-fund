@@ -70,7 +70,7 @@ static int server_resolve(void)
 	return 0;
 }
 
-static int client_init(void)
+static int server_connect(void)
 {
 	int err;
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
