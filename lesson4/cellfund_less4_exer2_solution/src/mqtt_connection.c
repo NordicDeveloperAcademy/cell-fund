@@ -33,7 +33,27 @@ LOG_MODULE_DECLARE(Lesson4_Exercise2);
 int certificate_provision(void)
 {
 	int err = 0;
+	bool exists;
 
+	err = modem_key_mgmt_exists(CONFIG_MQTT_TLS_SEC_TAG,
+				    MODEM_KEY_MGMT_CRED_TYPE_CA_CHAIN,
+				    &exists);
+	if (err) {
+		LOG_ERR("Failed to check for certificates err %d\n", err);
+		return err;
+	}
+
+	if (exists) {
+		/* Let's compare the existing credential */
+		err = modem_key_mgmt_cmp(CONFIG_MQTT_TLS_SEC_TAG,
+					 MODEM_KEY_MGMT_CRED_TYPE_CA_CHAIN,
+					 CA_CERTIFICATE, 
+					 strlen(CA_CERTIFICATE));
+		LOG_INF("%s\n", err ? "mismatch" : "match");
+		if (!err) {
+			return 0;
+		}
+	}
 	LOG_INF("Provisioning certificates");
 	err = modem_key_mgmt_write(CONFIG_MQTT_TLS_SEC_TAG,
 				   MODEM_KEY_MGMT_CRED_TYPE_CA_CHAIN,
