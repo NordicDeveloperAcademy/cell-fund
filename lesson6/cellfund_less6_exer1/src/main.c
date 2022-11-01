@@ -14,7 +14,7 @@
 /* STEP 4 - Include the header file for the GNSS interface */
 
 
-/* STEP 5.2 - Define the PVT data frame variable */
+/* STEP 5 - Define the PVT data frame variable */
 
 
 /* STEP 12.1 - Declare helper variables to find the TTFF */
