@@ -343,7 +343,6 @@ void main(void)
 		if (received < 0) {
 				LOG_ERR("Socket error:  %d, exit\n", errno);
 				break;
-			}
 		}
 
 		if (received == 0) {
