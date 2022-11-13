@@ -275,7 +275,7 @@ static int client_handle_response(uint8_t *buf, int received)
 	}
 
 	LOG_INF("CoAP response: Code 0x%x, Token 0x%02x%02x, Payload: %s\n",
-	       coap_header_get_code(&reply), token[1], token[0], temp_buf);
+	       coap_header_get_code(&reply), token[1], token[0], (char *)temp_buf);
 
 	return 0;
 }
