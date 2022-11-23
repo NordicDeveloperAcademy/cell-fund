@@ -13,7 +13,7 @@
 
 /* STEP 5 - Define the semaphore lte_connected */
 
-LOG_MODULE_REGISTER(Lesson2_Exercise1, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Lesson2_Exercise2, LOG_LEVEL_INF);
 
 /* STEP 7 - Define the event handler for LTE link control */ 
 static void lte_handler(const struct lte_lc_evt *const evt)
