@@ -61,10 +61,7 @@ static void modem_configure(void)
 }
 
 /* STEP 6 - Define a function to log fix data in a readable format */
-static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
-{
 
-}
 
 
 static void gnss_event_handler(int event)
