@@ -24,44 +24,17 @@ static K_SEM_DEFINE(lte_connected, 0, 1);
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
-static void lte_handler(const struct lte_lc_evt *const evt)
-{
-	switch (evt->type) {
-	case LTE_LC_EVT_NW_REG_STATUS:
-		if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
-			(evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
-			break;
-		}
-		LOG_INF("Network registration status: %s",
-				evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ?
-				"Connected - home network" : "Connected - roaming");
-		k_sem_give(&lte_connected);
-		break;
-	case LTE_LC_EVT_RRC_UPDATE:
-		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
-				"Connected" : "Idle");
-		break;	
-	default:
-		break;
-	}
-}
-
 static void modem_configure(void)
 {
-	LOG_INF("Connecting to LTE network");
 
-	int err = lte_lc_init_and_connect_async(lte_handler);
+	int err = lte_lc_init()
 	if (err) {
-		LOG_ERR("Modem could not be configured, error: %d", err);
+		LOG_ERR("Failed to initialize LTE Link Controller, error: %d", err);
 		return;
 	}
-	k_sem_take(&lte_connected, K_FOREVER);
-	LOG_INF("Connected to LTE network");
-	dk_set_led_on(DK_LED2);
 }
 
 /* STEP 6 - Define a function to log fix data in a readable format */
-
 
 
 static void gnss_event_handler(int event)
