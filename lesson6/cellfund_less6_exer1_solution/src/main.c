@@ -129,18 +129,12 @@ void main(void)
 
 	modem_configure();
 	
-	/* STEP 8 - Activate modem and deactivate LTE */
-	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL) != 0) {
+	/* STEP 8 - Activate only the GNSS stack */
+	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS) != 0) {
 		LOG_ERR("Failed to activate GNSS functional mode");
 		return;
 	}	
 	
-	LOG_INF("Deactivating LTE");
-	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE) != 0) {
-		LOG_ERR("Failed to activate GNSS functional mode");
-		return;
-	}
-
 	/* STEP 9 - Register the GNSS event handler */
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
 		LOG_ERR("Failed to set GNSS event handler");

@@ -86,7 +86,7 @@ void main(void)
 
 	modem_configure();
 	
-	/* STEP 8 - Activate modem and deactivate LTE */
+	/* STEP 8 - Activate only the GNSS stack */
 
 
 	/* STEP 9 - Register the GNSS event handler */
