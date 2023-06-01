@@ -1,0 +1,28 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "Cellfund Lesson 5 Exercise"
+
+config COAP_SERVER_HOSTNAME
+	string "CoAP server hostname"
+
+config COAP_SERVER_PORT
+	int "CoAP server port"
+	default 5683
+
+config COAP_TX_RESOURCE
+	string "CoAP resource - this is the TX channel of the board"
+	default "large-update"
+
+config COAP_RX_RESOURCE
+	string "CoAP resource - this is the RX channel of the board"
+	default "validate"
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu

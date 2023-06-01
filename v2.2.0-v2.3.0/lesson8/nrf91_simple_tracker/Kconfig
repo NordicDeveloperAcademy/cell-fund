@@ -1,0 +1,71 @@
+#
+# Copyright (c) 2019 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+menu "nRF91 Simple Tracker"
+
+config TRACKER_VERSION_MAJOR
+	int "Major verison number"
+	default 0
+
+config TRACKER_VERSION_MINOR
+	int "Minor verison number"
+	default 2
+
+config TRACKER_VERSION_PATCH
+	int "Patch verison number"
+	default 1
+
+config COAP_DEVICE_NAME
+	string "Device resource name - this will be the device name on the CoAP server"
+	default "cali.Ali.nRF9160"
+
+config COAP_POST_RESOURCE
+	string "Parent CoAP resource - this is the parent resource of your device resource name"
+	default "echo"
+
+config COAP_SERVER_HOSTNAME
+	string "CoAP server hostname"
+	default "californium.eclipseprojects.io"
+
+config COAP_SERVER_PORT
+	int "CoAP server port"
+	default 5684
+	
+config COAP_SERVER_PSK
+	string "Server PSK"
+	default "2e666f726e69756d"
+
+config TRACKER_PERIODIC_INTERVAL
+	int "Fix interval for periodic GPS fixes. This determines your tracking frequency"
+	range 10 65535
+	default 120
+	help
+	  Fix interval (in seconds) for periodic fixes.
+
+config TRACKER_PERIODIC_TIMEOUT
+	int "Fix timeout for periodic GPS fixes"
+	range 0 65535
+	default 600
+	help
+	  Fix timeout (in seconds) for periodic fixes.
+	  If set to zero, GNSS is allowed to run indefinitely until a valid PVT estimate is produced.
+
+config GNSS_LOW_ACCURACY
+	bool "Allow low accuracy fixes."
+	help
+	  Helps with faster fixes.GNSS demonstrates a looser acceptance criterion for a fix.
+
+config GNSS_HIGH_ACCURACY_TIMING_SOURCE
+	bool "Use Crystal oscillator"
+	help
+	  Use crystal oscillator (TCXO) timing source for the GNSS interface 
+	  instead of the default Real time clock (RTC).TCXO has higher power consumption than RTC
+
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu
