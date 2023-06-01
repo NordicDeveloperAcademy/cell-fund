@@ -8,6 +8,7 @@
 #include <zephyr/kernel.h>
 
 #include <zephyr/logging/log.h>
+#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 #include <dk_buttons_and_leds.h>
 
@@ -24,14 +25,25 @@ static K_SEM_DEFINE(lte_connected, 0, 1);
 
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
-static void modem_configure(void)
+static int modem_configure(void)
 {
+	int err;
 
-	int err = lte_lc_init()
+	LOG_INF("Initializing modem library");
+
+	err = nrf_modem_lib_init();
+	if (err) {
+		LOG_ERR("Failed to initialize the modem library, error: %d", err);
+		return err;
+	}
+
+	err = lte_lc_init();
 	if (err) {
 		LOG_ERR("Failed to initialize LTE Link Controller, error: %d", err);
-		return;
+		return err;
 	}
+
+	return 0;
 }
 
 /* STEP 6 - Define a function to log fix data in a readable format */
@@ -44,21 +56,26 @@ static void gnss_event_handler(int event)
 	switch (event) {
 	/* STEP 7.1 - On a PVT event, confirm if PVT data is a valid fix */
 
-	/* STEP 7.2 - Log when the GNSS sleeps and wakes up */	
+	/* STEP 7.2 - Log when the GNSS sleeps and wakes up */
 	default:
 		break;
 	}
 }
 
-void main(void)
+int main(void)
 {
+	int err;
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LEDs Library");
 	}
 
-	modem_configure();
-	
+	err = modem_configure();
+	if (err) {
+		LOG_ERR("Failed to configure the modem");
+		return 0;
+	}
+
 	/* STEP 8 - Activate only the GNSS stack */
 
 
@@ -73,5 +90,6 @@ void main(void)
 
 	/* STEP 12.2 - Log the current system uptime */
 
-}
 
+	return 0;
+}

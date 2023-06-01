@@ -13,6 +13,7 @@
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
+#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 
 /* STEP 4.2 - Include the header files for the modem key management library and TLS credentials API */
@@ -91,13 +92,13 @@ static int client_init(void)
 
 	/* STEP 7.1 - Set peer verification to be required */
 
-	
+
 	/* STEP 7.2 - Set the TLS hostname */
 
 
 	/* STEP 7.3 - Set the credential security tag */
 
-	
+
 	err = connect(sock, (struct sockaddr *)&server,
 		      sizeof(struct sockaddr_in));
 	if (err < 0) {
@@ -127,26 +128,45 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 		k_sem_give(&lte_connected);
         break;
 	case LTE_LC_EVT_RRC_UPDATE:
-		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
+		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
 				"Connected" : "Idle");
-		break;				 
+		break;
      default:
              break;
      }
 }
 
-static void modem_configure(void)
+static int modem_configure(void)
 {
-	LOG_INF("Connecting to LTE network"); 
-	
+	int err;
+
+	LOG_INF("Initializing modem library");
+
+	err = nrf_modem_lib_init();
+	if (err) {
+		LOG_ERR("Failed to initialize the modem library, error: %d", err);
+		return err;
+	}
+
+	/* STEP 8.1 - Write the PSK identity to the modem*/
+
+
+	/* STEP 8.2 - Write the PSK to the modem */
+
+
+	LOG_INF("Connecting to LTE network");
+
 	int err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_INF("Modem could not be configured, error: %d", err);
-		return;
+		return err;
 	}
+
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
 	dk_set_led_on(DK_LED2);
+
+	return 0;
 }
 
 /**@biref Send CoAP GET request. */
@@ -280,42 +300,43 @@ static int client_handle_response(uint8_t *buf, int received)
 	return 0;
 }
 
-static void button_handler(uint32_t button_state, uint32_t has_changed) 
+static void button_handler(uint32_t button_state, uint32_t has_changed)
 {
-	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS) 
+	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS)
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		client_get_send();
 	} else if (has_changed & DK_BTN2_MSK && button_state & DK_BTN2_MSK) {
 		client_put_send();
 	}
-	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS) 
+	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS)
 	static bool toogle = 1;
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		if (toogle ==1) {
-			client_get_send();	
+			client_get_send();
 		} else {
 			client_put_send();
 		}
 		toogle = !toogle;
-	} 
+	}
 	#endif
 }
 
 /* STEP 9.3 - Define the handler for the work item */
 
-void main(void)
+int main(void)
 {
-	int err, received;
-	/* STEP 8.1 - Write the PSK identity to the modem*/
-
-
-	/* STEP 8.2 - Write the PSK to the modem */
+	int err;
+	int received;
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LED library");
 	}
 
-	modem_configure();
+	err = modem_configure();
+	if (err) {
+		LOG_ERR("Failed to configure the modem");
+		return 0;
+	}
 
 	if (dk_buttons_init(button_handler) != 0) {
 		LOG_ERR("Failed to initialize the buttons library");
@@ -323,12 +344,12 @@ void main(void)
 
 	if (server_resolve() != 0) {
 		LOG_INF("Failed to resolve server name");
-		return;
+		return 0;
 	}
-	
+
 	if (client_init() != 0) {
 		LOG_INF("Failed to initialize client");
-		return;
+		return 0;
 	}
 
 	/* STEP 9.4 - Initialize the work item rx_work with the handler function */
@@ -343,9 +364,7 @@ void main(void)
 		if (received < 0) {
 				LOG_ERR("Socket error:  %d, exit\n", errno);
 				break;
-		}
-
-		if (received == 0) {
+		} else if (received == 0) {
 			LOG_ERR("Empty datagram\n");
 			continue;
 		}
@@ -356,5 +375,8 @@ void main(void)
 			break;
 		}
 	}
+
 	(void)close(sock);
+
+	return 0;
 }
