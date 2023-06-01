@@ -13,7 +13,6 @@
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
-#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 
 /* STEP 4.2 - Include the header files for the modem key management library and TLS credentials API */
@@ -108,7 +107,7 @@ static int client_init(void)
 		LOG_ERR("Failed to setup peer verification, errno %d\n", errno);
 		return -errno;
 	}
-
+	
 	/* STEP 7.2 - Set the DTLS hostname. */
 	err = setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_COAP_SERVER_HOSTNAME,
 		 strlen(CONFIG_COAP_SERVER_HOSTNAME));
@@ -126,7 +125,7 @@ static int client_init(void)
 		LOG_ERR("Failed to setup socket security tag, errno %d\n", errno);
 		return -errno;
 	}
-
+	
 	err = connect(sock, (struct sockaddr *)&server,
 		      sizeof(struct sockaddr_in));
 	if (err < 0) {
@@ -155,9 +154,9 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 		k_sem_give(&lte_connected);
         break;
 	case LTE_LC_EVT_RRC_UPDATE:
-		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
+		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
 				"Connected" : "Idle");
-		break;
+		break;	
 	case LTE_LC_EVT_PSM_UPDATE:
 		LOG_INF("PSM parameter update: Periodic TAU: %d s, Active time: %d s",
 			evt->psm_cfg.tau, evt->psm_cfg.active_time);
@@ -168,61 +167,35 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 	case LTE_LC_EVT_EDRX_UPDATE:
 		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
 			evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
-		break;
+		break;					 
      default:
              break;
      }
 }
 
-static int modem_configure(void)
+static void modem_configure(void)
 {
-	int err;
-
-	LOG_INF("Initializing modem library");
-
-	err = nrf_modem_lib_init();
-	if (err) {
-		LOG_ERR("Failed to initialize the modem library, error: %d", err);
-		return err;
-	}
-
-	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY, CONFIG_COAP_DEVICE_NAME,
-								strlen(CONFIG_COAP_DEVICE_NAME));
-	if (err) {
-		LOG_ERR("Failed to write identity: %d\n", err);
-		return err;
-	}
-
-	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK,
-								strlen(CONFIG_COAP_SERVER_PSK));
-	if (err) {
-		LOG_ERR("Failed to write identity: %d\n", err);
-		return err;
-	}
+	int err; 
 
 	err = lte_lc_psm_req(true);
 	if (err) {
 		LOG_ERR("lte_lc_psm_req, error: %d", err);
-	}
-
+	} 
 	err = lte_lc_edrx_req(true);
 	if (err) {
 		LOG_ERR("lte_lc_edrx_req, error: %d", err);
 	}
 
-	LOG_INF("Connecting to LTE network");
-
+	LOG_INF("Connecting to LTE network"); 
+	
 	err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_INF("Modem could not be configured, error: %d", err);
-		return err;
+		return;
 	}
-
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
 	dk_set_led_on(DK_LED2);
-
-	return 0;
 }
 
 /**@biref Send CoAP GET request. */
@@ -356,24 +329,24 @@ static int client_handle_response(uint8_t *buf, int received)
 	return 0;
 }
 
-static void button_handler(uint32_t button_state, uint32_t has_changed)
+static void button_handler(uint32_t button_state, uint32_t has_changed) 
 {
-	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS)
+	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS) 
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		client_get_send();
 	} else if (has_changed & DK_BTN2_MSK && button_state & DK_BTN2_MSK) {
 		client_put_send();
 	}
-	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS)
+	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS) 
 	static bool toogle = 1;
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		if (toogle ==1) {
-			client_get_send();
+			client_get_send();	
 		} else {
 			client_put_send();
 		}
 		toogle = !toogle;
-	}
+	} 
 	#endif
 }
 
@@ -383,20 +356,31 @@ static void rx_work_fn(struct k_work *work)
 	client_get_send();
 }
 
-int main(void)
+void main(void)
 {
-	int err;
-	int received;
+	int err, received;
+
+	/* STEP 8.1 - Write the PSK identity to the modem*/
+	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY, CONFIG_COAP_DEVICE_NAME, 
+								strlen(CONFIG_COAP_DEVICE_NAME));
+	if (err) {
+		LOG_ERR("Failed to write identity: %d\n", err);
+		return;
+	}
+
+	/* STEP 8.2 - Write the PSK to the modem */
+	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK, 
+								strlen(CONFIG_COAP_SERVER_PSK));
+	if (err) {
+		LOG_ERR("Failed to write identity: %d\n", err);
+		return;
+	}
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LED library");
 	}
 
-	err = modem_configure();
-	if (err) {
-		LOG_ERR("Failed to configure the modem");
-		return 0;
-	}
+	modem_configure();
 
 	if (dk_buttons_init(button_handler) != 0) {
 		LOG_ERR("Failed to initialize the buttons library");
@@ -404,12 +388,12 @@ int main(void)
 
 	if (server_resolve() != 0) {
 		LOG_INF("Failed to resolve server name");
-		return 0;
+		return;
 	}
-
+	
 	if (client_init() != 0) {
 		LOG_INF("Failed to initialize client");
-		return 0;
+		return;
 	}
 
 	/* STEP 9.4 - Initialize the work item rx_work with the handler function */
@@ -422,9 +406,11 @@ int main(void)
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
 
 		if (received < 0) {
-			LOG_ERR("Socket error:  %d, exit\n", errno);
-			break;
-		} else if (received == 0) {
+				LOG_ERR("Socket error:  %d, exit\n", errno);
+				break;
+			}
+
+		if (received == 0) {
 			LOG_ERR("Empty datagram\n");
 			continue;
 		}
@@ -434,10 +420,8 @@ int main(void)
 			LOG_ERR("Invalid response, exit\n");
 			break;
 		}
-
+		
 	}
 
 	(void)close(sock);
-
-	return 0;
 }
