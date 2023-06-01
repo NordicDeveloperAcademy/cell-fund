@@ -10,7 +10,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/net/socket.h>
-#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 #include <zephyr/random/rand32.h>
 #include <zephyr/net/tls_credentials.h>
@@ -32,7 +31,7 @@ static uint8_t coap_buf[APP_COAP_MAX_MSG_LEN];
 static uint8_t coap_sendbug[64];
 static struct nrf_modem_gnss_pvt_data_frame current_pvt;
 static struct nrf_modem_gnss_pvt_data_frame last_pvt;
-static enum tracker_status {status_nolte = DK_LED1, status_searching = DK_LED2, status_fixed = DK_LED3} device_status;
+static enum tracker_status {status_nolte = DK_LED1, status_searching = DK_LED2, status_fixed = DK_LED3} device_status; 
 static int resolve_address_lock = 0;
 static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
@@ -76,9 +75,9 @@ static void gnss_event_handler(int event)
 	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_TIMEOUT:
 		LOG_INF("GNSS enters sleep because fix retry timeout was reached\n\r");
 		break;
-
+		
 	default:
-
+	
 		break;
 	}
 }
@@ -122,10 +121,10 @@ static int gnss_init_and_start(void)
 	if (nrf_modem_gnss_prio_mode_enable() != 0){
 		LOG_ERR("Error setting GNSS priority mode");
 		return -1;
-	}
+	}	
 	return 0;
 }
-
+	
 /**@brief Resolves the configured hostname. */
 static int server_resolve(void)
 {
@@ -208,7 +207,7 @@ static int server_connect(void)
 		LOG_ERR("Failed to setup socket security tag, errno %d\n", errno);
 		return -errno;
 	}
-
+	
 	err = connect(sock, (struct sockaddr *)&server,
 		      sizeof(struct sockaddr_in));
 	if (err < 0) {
@@ -305,47 +304,22 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 }
 
 
-static int modem_configure(void)
+static void modem_configure(void)
 {
 	int err;
-
-	LOG_INF("Initializing modem library");
-
-	err = nrf_modem_lib_init();
-	if (err) {
-		LOG_ERR("Failed to initialize the modem library, error: %d", err);
-		return err;
-	}
-
-	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY, CONFIG_COAP_DEVICE_NAME, strlen(CONFIG_COAP_DEVICE_NAME));
-	if (err) {
-		LOG_ERR("Failed to write identity: %d\n", err);
-		return err;
-	}
-
-	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK, strlen(CONFIG_COAP_SERVER_PSK));
-	if (err) {
-		LOG_ERR("Failed to write identity: %d\n", err);
-		return err;
-	}
-
 
 	err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_ERR("Modem could not be configured, error: %d", err);
-		return err;
+		return;
 	}
-
-	/* Decativate LTE and enable GNSS. */
-	err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
-	if (err) {
+	/* Decativate LTE and enable GNSS. */		
+	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE) != 0) {
 		LOG_ERR("Failed to decativate LTE and enable GNSS functional mode");
-		return err;
+		return;
 	}
-
-	return 0;
 }
-
+ 
 
 static int client_post_send(void)
 {
@@ -392,7 +366,7 @@ static int client_post_send(void)
 		return err;
 	}
 
-   ret = snprintf (coap_sendbug, sizeof(coap_sendbug), "%.06f,%.06f\n%.01f m\n%04u-%02u-%02u %02u:%02u:%02u",
+   ret = snprintf (coap_sendbug, sizeof(coap_sendbug), "%.06f,%.06f\n%.01f m\n%04u-%02u-%02u %02u:%02u:%02u", 
    current_pvt.latitude, current_pvt.longitude,current_pvt.accuracy,current_pvt.datetime.year,current_pvt.datetime.month,current_pvt.datetime.day,
    current_pvt.datetime.hour, current_pvt.datetime.minute, last_pvt.datetime.seconds);
 	if (err < 0) {
@@ -415,49 +389,50 @@ static int client_post_send(void)
 
 	return 0;
 }
-static void button_handler(uint32_t button_state, uint32_t has_changed)
+static void button_handler(uint32_t button_state, uint32_t has_changed) 
 {
 	static bool toogle = 1;
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		if (toogle ==1){
-			dk_set_led_on(device_status);
+			dk_set_led_on(device_status);	
 		}else{
 			dk_set_led_off(DK_LED1);
 			dk_set_led_off(DK_LED2);
 			dk_set_led_off(DK_LED3);
 		}
 		toogle = !toogle;
-	}
+	} 
 }
 
-int main(void)
+void main(void)
 {
-	int err;
-	int received;
+	int err, received;
 	LOG_INF("The nRF91 Simple Tracker Version %d.%d.%d started\n",CONFIG_TRACKER_VERSION_MAJOR,CONFIG_TRACKER_VERSION_MINOR,CONFIG_TRACKER_VERSION_PATCH);
 
+	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY, CONFIG_COAP_DEVICE_NAME, strlen(CONFIG_COAP_DEVICE_NAME));
+	if (err) {
+		LOG_ERR("Failed to write identity: %d\n", err);
+		return;
+	}
+
+	err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK, strlen(CONFIG_COAP_SERVER_PSK));
+	if (err) {
+		LOG_ERR("Failed to write identity: %d\n", err);
+		return;
+	}
 	err = dk_leds_init();
 	if (err){
 		LOG_ERR("Failed to initlize the LEDs Library");
 	}
-
 	device_status = status_nolte;
-
-	err = modem_configure();
-	if (err) {
-		LOG_ERR("Failed to configure the modem");
-		return 0;
-	}
-
+	modem_configure();
 	err = dk_buttons_init(button_handler);
 	if (err) {
 		LOG_ERR("Failed to initlize button handler: %d\n", err);
-		return 0;
+		return;
 	}
-
 	LOG_INF("Starting GNSS....");
 	gnss_init_and_start();
-
 	while (1) {
 		k_sem_take(&gnss_fix_sem, K_FOREVER);
 		err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL);
@@ -470,31 +445,31 @@ int main(void)
 			LOG_INF("Resolving the server address\n\r");
 			if (server_resolve() != 0) {
 				LOG_ERR("Failed to resolve server name\n");
-					return 0;
+					return;	
 			}
 			resolve_address_lock = 1;
 		}
-
 		LOG_INF("Sending Data over LTE\r\n");
 		if (server_connect() != 0) {
 			LOG_ERR("Failed to initialize CoAP client\n");
-			return 0;
+			return;
 		}
 
 		if (client_post_send() != 0) {
 			LOG_ERR("Failed to send GET request, exit...\n");
 			break;
 		}
-
 		received = recv(sock, coap_buf, sizeof(coap_buf), 0);
+
 		if (received < 0) {
 			LOG_ERR("Error reading response\n");
 			break;
-		} else if (received == 0) {
+		}
+
+		if (received == 0) {
 			LOG_ERR("Disconnected\n");
 			break;
 		}
-
 		err = client_handle_get_response(coap_buf, received);
 		if (err < 0) {
 			LOG_ERR("Invalid response, exit...\n");
@@ -502,18 +477,14 @@ int main(void)
 		}
 
 		(void)close(sock);
-
 		err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
 		if (err != 0){
 			LOG_ERR("Failed to decativate LTE and enable GNSS functional mode");
 			break;
 		}
 	}
-
 	device_status = status_nolte;
+	lte_lc_power_off();
 	LOG_ERR("Error occoured. Shutting down modem");
-	(void)lte_lc_power_off();
-	(void)nrf_modem_lib_shutdown();
 
-	return 0;
 }
