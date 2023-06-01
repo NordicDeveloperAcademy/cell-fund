@@ -12,7 +12,6 @@
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
-#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 
 
@@ -118,39 +117,26 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 		k_sem_give(&lte_connected);
         break;
 	case LTE_LC_EVT_RRC_UPDATE:
-		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
+		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? 
 				"Connected" : "Idle");
-		break;
+		break;				 
      default:
              break;
      }
 }
 
-static int modem_configure(void)
+static void modem_configure(void)
 {
-	int err;
-
-	LOG_INF("Initializing modem library");
-
-	err = nrf_modem_lib_init();
-	if (err) {
-		LOG_ERR("Failed to initialize the modem library, error: %d", err);
-		return err;
-	}
-
-	LOG_INF("Connecting to LTE network");
-
-	err = lte_lc_init_and_connect_async(lte_handler);
+	LOG_INF("Connecting to LTE network"); 
+	
+	int err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_INF("Modem could not be configured, error: %d", err);
-		return err;
+		return;
 	}
-
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
 	dk_set_led_on(DK_LED2);
-
-	return 0;
 }
 
 /**@biref Send CoAP GET request. */
@@ -175,7 +161,7 @@ static int client_put_send(void)
 
 	next_token++;
 
-	/* STEP 8.1 - Initialize the CoAP packet and append the resource path */
+	/* STEP 8.1 - Initialize the CoAP packet and append the resource path */ 
 
 
 	/* STEP 8.2 - Append the content format as plain text */
@@ -217,26 +203,21 @@ static int client_handle_response(uint8_t *buf, int received)
 	return 0;
 }
 
-static void button_handler(uint32_t button_state, uint32_t has_changed)
+static void button_handler(uint32_t button_state, uint32_t has_changed) 
 {
 	/* STEP 10 - Send a GET request or PUT request upon button triggers */
 
 }
 
-int main(void)
+void main(void)
 {
-	int err;
-	int received;
+	int err, received;
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LED library");
 	}
 
-	err = modem_configure();
-	if (err) {
-		LOG_ERR("Failed to configure the modem");
-		return 0;
-	}
+	modem_configure();
 
 	if (dk_buttons_init(button_handler) != 0) {
 		LOG_ERR("Failed to initialize the buttons library");
@@ -244,12 +225,12 @@ int main(void)
 
 	if (server_resolve() != 0) {
 		LOG_INF("Failed to resolve server name");
-		return 0;
+		return;
 	}
-
+	
 	if (client_init() != 0) {
 		LOG_INF("Failed to initialize client");
-		return 0;
+		return;
 	}
 
 	while (1) {
@@ -259,8 +240,5 @@ int main(void)
 		/* STEP 12 - Parse the received CoAP packet */
 
 	}
-
 	(void)close(sock);
-
-	return 0;
 }

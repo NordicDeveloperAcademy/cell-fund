@@ -8,7 +8,6 @@
 #include <zephyr/kernel.h>
 
 #include <zephyr/logging/log.h>
-#include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 #include <dk_buttons_and_leds.h>
 
@@ -27,25 +26,14 @@ static K_SEM_DEFINE(lte_connected, 0, 1);
 LOG_MODULE_REGISTER(Lesson6_Exercise1, LOG_LEVEL_INF);
 
 
-static int modem_configure(void)
+static void modem_configure(void)
 {
-	int err;
 
-	LOG_INF("Initializing modem library");
-
-	err = nrf_modem_lib_init();
-	if (err) {
-		LOG_ERR("Failed to initialize the modem library, error: %d", err);
-		return err;
-	}
-
-	err = lte_lc_init();
+	int err = lte_lc_init()
 	if (err) {
 		LOG_ERR("Failed to initialize LTE Link Controller, error: %d", err);
-		return err;
+		return;
 	}
-
-	return 0;
 }
 
 /* STEP 6 - Define a function to log fix data in a readable format */
@@ -76,8 +64,8 @@ static void gnss_event_handler(int event)
 			if (pvt_data.sv[i].signal != 0) {
 				LOG_INF("sv: %d, cn0: %d", pvt_data.sv[i].sv, pvt_data.sv[i].cn0);
 				num_satellites++;
-			}
-		}
+			}	
+		} 
 		LOG_INF("Number of current satellites: %d", num_satellites);
 		err = nrf_modem_gnss_read(&pvt_data, sizeof(pvt_data), NRF_MODEM_GNSS_DATA_PVT);
 		if (err) {
@@ -107,52 +95,46 @@ static void gnss_event_handler(int event)
 	}
 }
 
-int main(void)
+void main(void)
 {
-	int err;
 
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LEDs Library");
 	}
 
-	err = modem_configure();
-	if (err) {
-		LOG_ERR("Failed to configure the modem");
-		return 0;
-	}
-
+	modem_configure();
+	
 	/* STEP 8 - Activate only the GNSS stack */
 	if (lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS) != 0) {
 		LOG_ERR("Failed to activate GNSS functional mode");
-		return 0;
-	}
-
+		return;
+	}	
+	
 	/* STEP 9 - Register the GNSS event handler */
 	if (nrf_modem_gnss_event_handler_set(gnss_event_handler) != 0) {
 		LOG_ERR("Failed to set GNSS event handler");
-		return 0;
+		return;
 	}
 
 	/* STEP 10 - Set the GNSS fix interval and GNSS fix retry period */
 	if (nrf_modem_gnss_fix_interval_set(CONFIG_GNSS_PERIODIC_INTERVAL) != 0) {
 		LOG_ERR("Failed to set GNSS fix interval");
-		return 0;
+		return;
 	}
 
 	if (nrf_modem_gnss_fix_retry_set(CONFIG_GNSS_PERIODIC_TIMEOUT) != 0) {
 		LOG_ERR("Failed to set GNSS fix retry");
-		return 0;
+		return;
 	}
 
 	/* STEP 11 - Start the GNSS receiver*/
 	LOG_INF("Starting GNSS");
 	if (nrf_modem_gnss_start() != 0) {
 		LOG_ERR("Failed to start GNSS");
-		return 0;
-	}
+		return;
+	}	
 
 	/* STEP 12.2 - Log the current system uptime */
 	gnss_start_time = k_uptime_get();
-
-	return 0;
 }
+
