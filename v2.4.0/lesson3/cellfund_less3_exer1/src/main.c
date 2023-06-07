@@ -153,5 +153,5 @@ int main(void)
 
 	(void)close(sock);
 
-	return 0,
+	return 0;
 }
