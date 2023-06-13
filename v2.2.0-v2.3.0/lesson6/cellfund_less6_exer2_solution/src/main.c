@@ -115,7 +115,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 		LOG_INF("PSM parameter update: Periodic TAU: %d s, Active time: %d s",
 			evt->psm_cfg.tau, evt->psm_cfg.active_time);
 		if (evt->psm_cfg.active_time == -1){
-			LOG_ERR("Network rejected PSM parameters. Failed to setup network");
+			LOG_ERR("Network rejected PSM parameters. Failed to enable PSM");
 		}
 		break;
 	/* STEP 9.2 - On event eDRX update, print eDRX paramters */
