@@ -156,7 +156,7 @@ static int modem_configure(void)
 
 	LOG_INF("Connecting to LTE network");
 
-	int err = lte_lc_init_and_connect_async(lte_handler);
+	err = lte_lc_init_and_connect_async(lte_handler);
 	if (err) {
 		LOG_INF("Modem could not be configured, error: %d", err);
 		return err;
