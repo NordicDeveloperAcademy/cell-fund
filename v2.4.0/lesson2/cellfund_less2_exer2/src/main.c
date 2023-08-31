@@ -32,6 +32,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 int main(void)
 {
+	int err;
 	if (dk_leds_init() != 0) {
 		LOG_ERR("Failed to initialize the LEDs Library");
 	}
