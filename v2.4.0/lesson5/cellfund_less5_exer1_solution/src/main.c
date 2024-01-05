@@ -160,7 +160,7 @@ static int client_get_send(void)
 	/* STEP 7.1 - Create the CoAP message*/
 	struct coap_packet request;
 
-	next_token++;
+	next_token = sys_rand32_get();
 
 	int err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),
 			       APP_COAP_VERSION, COAP_TYPE_NON_CON,
