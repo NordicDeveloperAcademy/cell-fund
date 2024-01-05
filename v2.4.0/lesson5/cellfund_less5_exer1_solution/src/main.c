@@ -198,7 +198,7 @@ static int client_put_send(void)
 	int err;
 	struct coap_packet request;
 
-	next_token++;
+	next_token = sys_rand32_get();
 
 	/* STEP 8.1 - Initialize the CoAP packet and append the resource path */
 	err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),

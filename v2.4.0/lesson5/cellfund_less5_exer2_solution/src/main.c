@@ -212,7 +212,7 @@ static int client_get_send(void)
 	int err;
 	struct coap_packet request;
 
-	next_token++;
+	next_token = sys_rand32_get();
 
 	err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),
 			       APP_COAP_VERSION, COAP_TYPE_NON_CON,
@@ -247,7 +247,7 @@ static int client_put_send(void)
 	int err;
 	struct coap_packet request;
 
-	next_token++;
+	next_token = sys_rand32_get();
 
 	err = coap_packet_init(&request, coap_buf, sizeof(coap_buf),
 			       APP_COAP_VERSION, COAP_TYPE_NON_CON,
