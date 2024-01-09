@@ -18,7 +18,7 @@ config MQTT_CLIENT_ID
 	string "MQTT Client ID"
 	help
 	  Use a custom Client ID string. If not set, the client ID will be
-	  generated based on IMEI number (for nRF9160 based targets) or
+	  generated based on IMEI number (for nRF91 Series based targets) or
 	  randomly (for other platforms).
 	default ""
 

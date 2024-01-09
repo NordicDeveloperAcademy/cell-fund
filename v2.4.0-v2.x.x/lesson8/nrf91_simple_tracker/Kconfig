@@ -20,7 +20,7 @@ config TRACKER_VERSION_PATCH
 
 config COAP_DEVICE_NAME
 	string "Device resource name - this will be the device name on the CoAP server"
-	default "cali.heidi.nRF9160"
+	default "cali.test.nrf91"
 
 config COAP_POST_RESOURCE
 	string "Parent CoAP resource - this is the parent resource of your device resource name"

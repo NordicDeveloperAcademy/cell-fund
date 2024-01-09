@@ -24,7 +24,7 @@ config COAP_RX_RESOURCE
 # STEP 2.1 - Define the PSK Identity configuration
 config COAP_DEVICE_NAME
 	string "Device resource name - this will be the device name on the CoAP server"
-	default "cali.test.nrf9160"
+	default "cali.test.nrf91"
 
 # STEP 2.2 - Define the PSK Secret configuration	
 config COAP_SERVER_PSK
