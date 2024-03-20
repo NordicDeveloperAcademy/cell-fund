@@ -142,6 +142,15 @@ static int modem_configure(void)
 		return err;
 	}
 
+	/* lte_lc_init deprecated in >= v2.6.0 */
+	#if NCS_VERSION_NUMBER < 0x20600
+	err = lte_lc_init();
+	if (err) {
+		LOG_ERR("Failed to initialize LTE link control library, error: %d", err);
+		return err;
+	}
+	#endif
+	
 	/* STEP 8 - Request PSM and eDRX from the network */
 	err = lte_lc_psm_req(true);
 	if (err) {
@@ -152,12 +161,11 @@ static int modem_configure(void)
 	if (err) {
 		LOG_ERR("lte_lc_edrx_req, error: %d", err);
 	}
-
+	
 	LOG_INF("Connecting to LTE network");
-
-	err = lte_lc_init_and_connect_async(lte_handler);
+	err = lte_lc_connect_async(lte_handler);
 	if (err) {
-		LOG_ERR("Modem could not be configured, error: %d", err);
+		LOG_ERR("Error in lte_lc_connect_async, error: %d", err);
 		return err;
 	}
 
