@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <ncs_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
@@ -32,6 +33,10 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				evt->nw_reg_status == LTE_LC_NW_REG_REGISTERED_HOME ?
 				"Connected - home network" : "Connected - roaming");
 		k_sem_give(&lte_connected);
+		
+		/* STEP 10 - Turn on the LED status LED */
+		dk_set_led_on(DK_LED2);
+
 		break;
 	/* STEP 7.2 - On event RRC update, print RRC mode */
 	case LTE_LC_EVT_RRC_UPDATE:
@@ -49,19 +54,27 @@ static int modem_configure(void)
 	int err;
 
 	LOG_INF("Initializing modem library");
-
 	err = nrf_modem_lib_init();
 	if (err) {
 		LOG_ERR("Failed to initialize the modem library, error: %d", err);
 		return err;
 	}
 
-	err = lte_lc_init_and_connect_async(lte_handler);
+	/* lte_lc_init deprecated in >= v2.6.0 */
+	#if NCS_VERSION_NUMBER < 0x20600
+	err = lte_lc_init();
 	if (err) {
-		LOG_ERR("Modem could not be configured, error: %d", err);
+		LOG_ERR("Failed to initialize LTE link control library, error: %d", err);
 		return err;
 	}
-
+	#endif
+	
+	LOG_INF("Connecting to LTE network");
+	err = lte_lc_connect_async(lte_handler);
+	if (err) {
+		LOG_ERR("Error in lte_lc_connect_async, error: %d", err);
+		return err;
+	}
 	return 0;
 }
 
@@ -80,15 +93,10 @@ int main(void)
 		return 0;
 	}
 
-	LOG_INF("Connecting to LTE network");
-
 	/* STEP 9 - Take the semaphore lte_connected */
 	k_sem_take(&lte_connected, K_FOREVER);
 
 	LOG_INF("Connected to LTE network");
-
-	/* STEP 10 - Turn on the LED status LED */
-	dk_set_led_on(DK_LED2);
-
+	
 	return 0;
 }
