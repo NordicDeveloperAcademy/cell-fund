@@ -16,7 +16,7 @@
 #include <zephyr/net/socket.h>
 
 /* STEP 4 - Define the hostname and port for the echo server */
-#define SERVER_HOSTNAME "nordicecho.westeurope.cloudapp.azure.com"
+#define SERVER_HOSTNAME "udp-echo.nordicsemi.academy"
 #define SERVER_PORT "2444"
 
 #define MESSAGE_SIZE 256
