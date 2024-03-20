@@ -5,6 +5,7 @@
  */
 
 #include <stdio.h>
+#include <ncs_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
