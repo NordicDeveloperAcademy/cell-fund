@@ -5,15 +5,21 @@
  */
 
 #include <stdio.h>
+#include <ncs_version.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
-#include <zephyr/random/rand32.h>
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 #include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
+
+#if NCS_VERSION_NUMBER < 0x20600
+#include <zephyr/random/rand32.h>
+#else 
+#include <zephyr/random/random.h>
+#endif
 
 
 /* STEP 2.2 - Include the header file for the CoAP library */

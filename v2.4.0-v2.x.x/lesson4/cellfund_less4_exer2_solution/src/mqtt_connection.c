@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include <string.h>
+#include <ncs_version.h>
 
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net/socket.h>
-#include <zephyr/random/rand32.h>
 #include <zephyr/net/mqtt.h>
+#include <nrf_modem_at.h>
 
 #include <dk_buttons_and_leds.h>
 #include "mqtt_connection.h"
-#include <nrf_modem_at.h>
+
+#if NCS_VERSION_NUMBER < 0x20600
+#include <zephyr/random/rand32.h>
+#else 
+#include <zephyr/random/random.h>
+#endif
 
 /* STEP 2.4 - Include the header for the Modem Key Management library */
 #include <modem/modem_key_mgmt.h>

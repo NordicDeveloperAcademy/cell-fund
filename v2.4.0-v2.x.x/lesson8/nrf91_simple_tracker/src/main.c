@@ -7,16 +7,22 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ncs_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/net/socket.h>
 #include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
-#include <zephyr/random/rand32.h>
 #include <zephyr/net/tls_credentials.h>
 #include <modem/modem_key_mgmt.h>
 #include <dk_buttons_and_leds.h>
 #include <nrf_modem_gnss.h>
+
+#if NCS_VERSION_NUMBER < 0x20600
+#include <zephyr/random/rand32.h>
+#else 
+#include <zephyr/random/random.h>
+#endif
 
 #define SEC_TAG 12
 #define APP_COAP_SEND_INTERVAL_MS 60000

@@ -16,6 +16,12 @@
 #include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 
+#if NCS_VERSION_NUMBER < 0x20600
+#include <zephyr/random/rand32.h>
+#else 
+#include <zephyr/random/random.h>
+#endif
+
 /* STEP 4.2 - Include the header files for the modem key management library and TLS credentials API */
 
 
