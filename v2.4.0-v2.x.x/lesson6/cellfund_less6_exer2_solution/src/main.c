@@ -15,7 +15,7 @@
 #include <modem/lte_lc.h>
 #include <nrf_modem_gnss.h>
 
-#define SERVER_HOSTNAME "nordicecho.westeurope.cloudapp.azure.com"
+#define SERVER_HOSTNAME "udp-echo.nordicsemi.academy"
 #define SERVER_PORT "2444"
 
 #define MESSAGE_SIZE 256
