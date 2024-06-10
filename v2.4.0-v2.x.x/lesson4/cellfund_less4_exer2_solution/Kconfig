@@ -24,7 +24,7 @@ config MQTT_CLIENT_ID
 
 config MQTT_BROKER_HOSTNAME
 	string "MQTT broker hostname"
-	default "test.mosquitto.org"
+	default "mqtt.nordicsemi.academy"
 
 config MQTT_BROKER_PORT
 	int "MQTT broker port"
