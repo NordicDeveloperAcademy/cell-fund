@@ -353,13 +353,13 @@ static int client_handle_response(uint8_t *buf, int received)
 
 static void button_handler(uint32_t button_state, uint32_t has_changed)
 {
-	#if defined (CONFIG_BOARD_NRF9160DK_NRF9160_NS) || (CONFIG_BOARD_NRF9161DK_NRF9161_NS)
+	#if defined (CONFIG_DK)
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		client_get_send();
 	} else if (has_changed & DK_BTN2_MSK && button_state & DK_BTN2_MSK) {
 		client_put_send();
 	}
-	#elif defined (CONFIG_BOARD_THINGY91_NRF9160_NS)
+	#elif defined (CONFIG_THINGY)
 	static bool toogle = 1;
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
 		if (toogle ==1) {
