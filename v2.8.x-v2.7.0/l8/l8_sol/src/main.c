@@ -44,7 +44,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
 	printk("Latitude:       %.06f\n", pvt_data->latitude);
 	printk("Longitude:      %.06f\n", pvt_data->longitude);
-	printk("Altitude:       %.01f m\n", pvt_data->altitude);
+	printk("Altitude:       %.01f m\n", (double)pvt_data->altitude);
 	printk("Time (UTC):     %02u:%02u:%02u.%03u\n",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,
@@ -290,7 +290,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 		len = snprintf(log_buf, sizeof(log_buf),
 			       "eDRX parameter update: eDRX: %f, PTW: %f\n",
-			       evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
+			       (double)evt->edrx_cfg.edrx, (double)evt->edrx_cfg.ptw);
 		if (len > 0) {
 			LOG_INF("%s\n", log_buf);
 		}
@@ -409,7 +409,7 @@ static int client_post_send(void)
 	}
 
    ret = snprintf (coap_sendbug, sizeof(coap_sendbug), "%.06f,%.06f\n%.01f m\n%04u-%02u-%02u %02u:%02u:%02u",
-   current_pvt.latitude, current_pvt.longitude,current_pvt.accuracy,current_pvt.datetime.year,current_pvt.datetime.month,current_pvt.datetime.day,
+   current_pvt.latitude, current_pvt.longitude,(double)current_pvt.accuracy,current_pvt.datetime.year,current_pvt.datetime.month,current_pvt.datetime.day,
    current_pvt.datetime.hour, current_pvt.datetime.minute, last_pvt.datetime.seconds);
 	if (err < 0) {
 		LOG_ERR("snprintf failed to format string, %d\n", err);

@@ -123,7 +123,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 	/* STEP 9.2 - On event eDRX update, print eDRX paramters */
 	case LTE_LC_EVT_EDRX_UPDATE:
 		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
-			evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
+			(double)evt->edrx_cfg.edrx, (double)evt->edrx_cfg.ptw);
 		break;
 	default:
 		break;
@@ -180,7 +180,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
 	LOG_INF("Latitude:       %.06f", pvt_data->latitude);
 	LOG_INF("Longitude:      %.06f", pvt_data->longitude);
-	LOG_INF("Altitude:       %.01f m", pvt_data->altitude);
+	LOG_INF("Altitude:       %.01f m", (double)pvt_data->altitude);
 	LOG_INF("Time (UTC):     %02u:%02u:%02u.%03u",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,

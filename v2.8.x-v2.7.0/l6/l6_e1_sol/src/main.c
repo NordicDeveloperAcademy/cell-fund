@@ -57,7 +57,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
 	LOG_INF("Latitude:       %.06f", pvt_data->latitude);
 	LOG_INF("Longitude:      %.06f", pvt_data->longitude);
-	LOG_INF("Altitude:       %.01f m", pvt_data->altitude);
+	LOG_INF("Altitude:       %.01f m", (double)pvt_data->altitude);
 	LOG_INF("Time (UTC):     %02u:%02u:%02u.%03u",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,

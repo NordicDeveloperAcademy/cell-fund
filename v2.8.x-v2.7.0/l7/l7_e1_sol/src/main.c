@@ -173,7 +173,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 		break;
 	case LTE_LC_EVT_EDRX_UPDATE:
 		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
-			evt->edrx_cfg.edrx, evt->edrx_cfg.ptw);
+			(double)evt->edrx_cfg.edrx, (double)evt->edrx_cfg.ptw);
 		break;
      default:
              break;
