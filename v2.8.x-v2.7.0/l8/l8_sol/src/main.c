@@ -54,7 +54,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 
 static void gnss_event_handler(int event)
 {
-	int retval;
+	int err;
 	switch (event) {
 	case NRF_MODEM_GNSS_EVT_PVT:
 		LOG_INF("Searching for GNSS Satellites....\n\r");
@@ -72,8 +72,8 @@ static void gnss_event_handler(int event)
 	case NRF_MODEM_GNSS_EVT_SLEEP_AFTER_FIX:
 		LOG_INF("GNSS enters sleep because fix was achieved in periodic mode\n\r");
 		device_status = status_fixed;
-		retval = nrf_modem_gnss_read(&last_pvt, sizeof(last_pvt), NRF_MODEM_GNSS_DATA_PVT);
-		if (retval == 0){
+		err = nrf_modem_gnss_read(&last_pvt, sizeof(last_pvt), NRF_MODEM_GNSS_DATA_PVT);
+		if (err == 0){
 			current_pvt = last_pvt;
 			print_fix_data(&current_pvt);
 			k_sem_give(&gnss_fix_sem);
@@ -365,7 +365,7 @@ static int modem_configure(void)
 
 static int client_post_send(void)
 {
-	int err,ret;
+	int err, ret;
 	struct coap_packet request;
 
 	next_token++;
@@ -435,9 +435,10 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 {
 	static bool toogle = 1;
 	if (has_changed & DK_BTN1_MSK && button_state & DK_BTN1_MSK) {
-		if (toogle ==1){
+		if (toogle == 1) {
 			dk_set_led_on(device_status);
-		}else{
+		} 
+		else {
 			dk_set_led_off(DK_LED1);
 			dk_set_led_off(DK_LED2);
 			dk_set_led_off(DK_LED3);
