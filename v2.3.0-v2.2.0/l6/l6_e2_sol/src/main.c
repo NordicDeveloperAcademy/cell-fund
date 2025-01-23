@@ -203,7 +203,7 @@ static void gnss_event_handler(int event)
 		if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_DEADLINE_MISSED) {
 			LOG_INF("GNSS blocked by LTE activity");
 		} else if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME) {
-			LOG_INF("Insufficient GNSS time windows");
+			LOG_INF("Insufficient GNSS time window");
 		}
 		break;
 
