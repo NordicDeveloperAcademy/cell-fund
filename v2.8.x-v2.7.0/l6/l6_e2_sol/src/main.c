@@ -112,7 +112,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
 				"Connected" : "Idle");
 		break;
-	/* STEP 9.1 - On event PSM update, print PSM paramters and check if was enabled */
+	/* STEP 9.1 - On event PSM update, print PSM parameters and check if was enabled */
 	case LTE_LC_EVT_PSM_UPDATE:
 		LOG_INF("PSM parameter update: Periodic TAU: %d s, Active time: %d s",
 			evt->psm_cfg.tau, evt->psm_cfg.active_time);
@@ -120,7 +120,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 			LOG_ERR("Network rejected PSM parameters. Failed to enable PSM");
 		}
 		break;
-	/* STEP 9.2 - On event eDRX update, print eDRX paramters */
+	/* STEP 9.2 - On event eDRX update, print eDRX parameters */
 	case LTE_LC_EVT_EDRX_UPDATE:
 		LOG_INF("eDRX parameter update: eDRX: %f, PTW: %f",
 			(double)evt->edrx_cfg.edrx, (double)evt->edrx_cfg.ptw);
