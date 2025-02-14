@@ -57,6 +57,7 @@ static int server_resolve(void)
 	}
 
 	struct sockaddr_in *server4 = ((struct sockaddr_in *)&server);
+	
 	server4->sin_addr.s_addr =
 		((struct sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
 	server4->sin_family = AF_INET;
@@ -87,7 +88,7 @@ static int server_connect(void)
 		LOG_ERR("Connect failed : %d", errno);
 		return -errno;
 	}
-	LOG_INF("Successfully connected");
+	LOG_INF("Successfully connected to server");
 
 	return 0;
 }
@@ -110,9 +111,9 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
 				"Connected" : "Idle");
 		break;
-	/* STEP 9.1 - On event PSM update, print PSM paramters and check if was enabled */
+	/* STEP 9.1 - On event PSM update, print PSM parameters and check if was enabled */
 
-	/* STEP 9.2 - On event eDRX update, print eDRX paramters */
+	/* STEP 9.2 - On event eDRX update, print eDRX parameters */
 
 	default:
 		break;
@@ -140,7 +141,6 @@ static int modem_configure(void)
 	}
 	#endif
 
-
 	/* STEP 8 - Request PSM and eDRX from the network */
 
 	
@@ -150,7 +150,6 @@ static int modem_configure(void)
 		LOG_ERR("Error in lte_lc_connect_async, error: %d", err);
 		return err;
 	}
-
 
 	k_sem_take(&lte_connected, K_FOREVER);
 	LOG_INF("Connected to LTE network");
@@ -163,7 +162,7 @@ static void print_fix_data(struct nrf_modem_gnss_pvt_data_frame *pvt_data)
 {
 	LOG_INF("Latitude:       %.06f", pvt_data->latitude);
 	LOG_INF("Longitude:      %.06f", pvt_data->longitude);
-	LOG_INF("Altitude:       %.01f m", pvt_data->altitude);
+	LOG_INF("Altitude:       %.01f m", (double)pvt_data->altitude);
 	LOG_INF("Time (UTC):     %02u:%02u:%02u.%03u",
 	       pvt_data->datetime.hour,
 	       pvt_data->datetime.minute,
