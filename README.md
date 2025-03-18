@@ -13,7 +13,7 @@ This repository contains the exercise code base and solutions. Make sure to sele
 
 
 The course supports the following hardware:
- - [nRF9151 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9151-DK) (nRF Connect SDK v2.6.0 or higher is neededup)
+ - [nRF9151 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9151-DK) (nRF Connect SDK v2.6.0 or higher is needed)
  - [nRF9161 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9161-DK) (nRF Connect SDK v2.5.0 or higher is needed)
  - [nRF9160 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9160-DK)
  - [Thingy:91 X](https://www.nordicsemi.com/Products/Development-hardware/Nordic-Thingy-91-X) (nRF Connect SDK v2.8.0 or higher is needed)
