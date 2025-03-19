@@ -6,7 +6,7 @@ on:
       sdk:
         description: 'NCS SDK branch'     
         required: true
-        default: 'v2.3.0.0-preview1'
+        default: 'v3.0.0-preview1'
   
 jobs:
   sdk_version_print:
