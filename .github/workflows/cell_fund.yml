@@ -22,7 +22,7 @@ jobs:
       max-parallel: 20
       matrix:
           board: [ nrf9151dk/nrf9151/ns, nrf9160dk/nrf9160/ns, nrf9161dk/nrf9161/ns, thingy91x/nrf9151/ns, thingy91/nrf9160/ns]
-          project: [ l2/l2_e2_sol, l3/l3_e1_sol, l4/l4_e1_sol, l4/l4_e2_sol, l5/l5_e1_sol/,l5/l5_e1_sol/, l6/l6_e1_sol/, l6/l6_e2_sol/, l7/l7_e1_sol, l8/l8_sol/ ]
+          project: [ l2/l2_e2_sol, l3/l3_e1_sol, l4/l4_e1_sol, l4/l4_e2_sol, l5/l5_e1_sol/,l5/l5_e2_sol/, l6/l6_e1_sol/, l6/l6_e2_sol/, l7/l7_e1_sol, l8/l8_sol/ ]
       
     runs-on: ubuntu-latest
     continue-on-error: true 
