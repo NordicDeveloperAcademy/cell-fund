@@ -1,4 +1,4 @@
-name: cell-fund all 
+name: cell-fund test 
 
 on:
   workflow_dispatch:
