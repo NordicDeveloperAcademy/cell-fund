@@ -1,4 +1,4 @@
-name: cell-fund all 
+name: cell-fund
 
 on:
   workflow_dispatch:
@@ -16,25 +16,20 @@ jobs:
       run: |
         echo 'nRF Connect SDK version:' >> $GITHUB_STEP_SUMMARY
         echo ${{ inputs.sdk }} >> $GITHUB_STEP_SUMMARY
+ 
   build:
     strategy:
       max-parallel: 20
       matrix:
           board: [ nrf9151dk/nrf9151/ns, nrf9160dk/nrf9160/ns, nrf9161dk/nrf9161/ns, thingy91x/nrf9151/ns, thingy91/nrf9160/ns]
           project: [ l2/l2_e2_sol, l3/l3_e1_sol, l4/l4_e1_sol, l4/l4_e2_sol, l5/l5_e1_sol/,l5/l5_e1_sol/, l6/l6_e1_sol/, l6/l6_e2_sol/, l7/l7_e1_sol, l8/l8_sol/ ]
-             
-              
-          
+      
     runs-on: ubuntu-latest
     continue-on-error: true 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: 'true'
-        token: ${{ secrets.ACCESS_TOKEN_FULL }}
-
-    - name: image pull
-      run: docker pull ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}
-    - name: build sample
-      run: docker run  --rm -v ${PWD}/cell-fund:/workdir/project -w /workdir/project/v2.9.0-v2.7.0 ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}  west build ${{ matrix.project }} -b ${{ matrix.board }} --build-dir ${{ matrix.project }}/build
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Pull image
+        run: docker pull ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}
+      - name: Build sample
+        run: docker run  --rm -v ${PWD}:/workdir/project -w /workdir/project/v2.9.0-v2.7.0 ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}  west build ${{ matrix.project }} -b ${{ matrix.board }} --build-dir ${{ matrix.project }}/build
