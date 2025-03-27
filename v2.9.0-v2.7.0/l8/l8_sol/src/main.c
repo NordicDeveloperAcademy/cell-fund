@@ -18,11 +18,7 @@
 #include <dk_buttons_and_leds.h>
 #include <nrf_modem_gnss.h>
 
-#if NCS_VERSION_NUMBER < 0x20600
-#include <zephyr/random/rand32.h>
-#else 
 #include <zephyr/random/random.h>
-#endif
 
 #define SEC_TAG 12
 #define APP_COAP_SEND_INTERVAL_MS 60000
@@ -335,14 +331,6 @@ static int modem_configure(void)
 		return err;
 	}
 
-	/* lte_lc_init deprecated in >= v2.6.0 */
-	#if NCS_VERSION_NUMBER < 0x20600
-	err = lte_lc_init();
-	if (err) {
-		LOG_ERR("Failed to initialize LTE link control library, error: %d", err);
-		return err;
-	}
-	#endif
 	
 	LOG_INF("Connecting to LTE network");
 	err = lte_lc_connect_async(lte_handler);
