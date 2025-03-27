@@ -1,0 +1,40 @@
+name: cell-fund
+
+on:
+  workflow_dispatch:
+    inputs:
+      sdk:
+        description: 'NCS SDK branch'     
+        required: true
+        default: 'v3.0.0-preview1'
+        options:
+            - v3.0.0-preview1
+            - v2.9-branch
+            - v2.8-branch
+            - v2.7-branch
+      directory:
+        description: 'Repo version directory'
+        required: true
+        default: 'v3.0.0'
+        options:
+            - v2.3.0-v2.2.0
+            - v2.6.2-v2.4.0
+            - v2.9.0-v2.7.0
+  
+jobs:
+  build:
+    strategy:
+      max-parallel: 20
+      matrix:
+          board: [ nrf9151dk/nrf9151/ns, nrf9160dk/nrf9160/ns, nrf9161dk/nrf9161/ns, thingy91x/nrf9151/ns, thingy91/nrf9160/ns]
+          project: [ l2/l2_e2_sol, l3/l3_e1_sol, l4/l4_e1_sol, l4/l4_e2_sol, l5/l5_e1_sol/,l5/l5_e2_sol/, l6/l6_e1_sol/, l6/l6_e2_sol/, l7/l7_e1_sol, l8/l8_sol/ ]
+      
+    runs-on: ubuntu-latest
+    continue-on-error: true 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Pull image
+        run: docker pull ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}
+      - name: Build sample
+        run: docker run  --rm -v ${PWD}:/workdir/project -w /workdir/project/${{ inputs.directory }} ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}  west build ${{ matrix.project }} -b ${{ matrix.board }} --build-dir ${{ matrix.project }}/build
