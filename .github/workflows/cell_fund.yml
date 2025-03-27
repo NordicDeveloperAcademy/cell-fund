@@ -7,6 +7,19 @@ on:
         description: 'NCS SDK branch'     
         required: true
         default: 'v3.0.0-preview1'
+        options:
+            - v3.0.0-preview1
+            - v2.9-branch
+            - v2.8-branch
+            - v2.7-branch
+      directory:
+        description: 'Repo version directory'
+        required: true
+        default: 'v3.0.0'
+        options:
+            - v2.3.0-v2.2.0
+            - v2.6.2-v2.4.0
+            - v2.9.0-v2.7.0
   
 jobs:
   build:
@@ -24,4 +37,4 @@ jobs:
       - name: Pull image
         run: docker pull ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}
       - name: Build sample
-        run: docker run  --rm -v ${PWD}:/workdir/project -w /workdir/project/v2.9.0-v2.7.0 ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}  west build ${{ matrix.project }} -b ${{ matrix.board }} --build-dir ${{ matrix.project }}/build
+        run: docker run  --rm -v ${PWD}:/workdir/project -w /workdir/project/${{ inputs.directory }} ghcr.io/lukaszbielaknordicsemi/nordicplayground/nrfconnect-sdk:${{ inputs.sdk }}  west build ${{ matrix.project }} -b ${{ matrix.board }} --build-dir ${{ matrix.project }}/build
