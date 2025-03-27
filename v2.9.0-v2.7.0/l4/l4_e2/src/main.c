@@ -62,14 +62,6 @@ static int modem_configure(void)
 
 	/* STEP 4.3 - Store the certificate in the modem while the modem is in offline mode  */
 
-	/* lte_lc_init deprecated in >= v2.6.0 */
-	#if NCS_VERSION_NUMBER < 0x20600
-	err = lte_lc_init();
-	if (err) {
-		LOG_ERR("Failed to initialize LTE link control library, error: %d", err);
-		return err;
-	}
-	#endif
 	
 	LOG_INF("Connecting to LTE network");
 	err = lte_lc_connect_async(lte_handler);

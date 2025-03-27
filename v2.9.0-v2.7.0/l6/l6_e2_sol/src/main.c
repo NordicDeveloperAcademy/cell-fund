@@ -141,15 +141,6 @@ static int modem_configure(void)
 		LOG_ERR("Failed to initialize the modem library, error: %d", err);
 		return err;
 	}
-
-	/* lte_lc_init deprecated in >= v2.6.0 */
-	#if NCS_VERSION_NUMBER < 0x20600
-	err = lte_lc_init();
-	if (err) {
-		LOG_ERR("Failed to initialize LTE link control library, error: %d", err);
-		return err;
-	}
-	#endif
 	
 	/* STEP 8 - Request PSM and eDRX from the network */
 	err = lte_lc_psm_req(true);
