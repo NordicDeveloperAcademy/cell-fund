@@ -5,11 +5,11 @@ The Cellular IoT Fundamentals course is a self-paced hands-on online course focu
 
 In the  course, we will study the cellular technologies LTE-M and NB-IoT. We will examine in-depth the software architecture of a cellular IoT firmware and go over the [nRF91 Series](https://www.nordicsemi.com/Products/Wireless/Low-power-cellular-IoT/Products?lang=en#infotabs) hardware.  
 
-This repository contains the exercise code base and solutions. Make sure to select the directory that corresponds with the nRF Connect SDK version of your choosing:
+This repository contains the exercise code base and solutions. Make sure to select the branch that corresponds with the nRF Connect SDK version of your choosing:
 
- - <code>v2.3.0-v2.2.0</code>: For nRF Connect SDK versions v2.2.0 to v2.3.0
- - <code>v2.6.0-v2.4.0</code>: For nRF Connect SDK versions v2.4.0 to v2.6.0
- - <code>v2.9.0-v2.7.0</code>: For nRF Connect SDK versions v2.7.0 to v2.9.0
+ - <code>main</code>: For nRF Connect SDK versions v3.0.0 - v2.7.0
+ - <code>v2.6.0-v2.4.0</code>: For nRF Connect SDK versions v2.6.0 to v2.4.0
+ - <code>v2.3.0-v2.2.0</code>: For nRF Connect SDK versions v2.3.0 to v2.2.0
 
 
 The course supports the following hardware:
