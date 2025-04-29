@@ -15,4 +15,4 @@ common:
       - native_sim
     
 tests:
-  l6.e1_sol: {}
+  cell_fund.l6.e1_sol: {}
