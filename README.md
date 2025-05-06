@@ -9,9 +9,13 @@ This repository contains the exercise code base and solutions. Make sure to sele
 
  - <code>main</code>: For nRF Connect SDK versions v3.0.0
  - <code>v2.9.0-v2.7.0</code>: For nRF Connect SDK versions v2.9.0 - v2.7.0
- - <code>v2.6.0-v2.4.0</code>: For nRF Connect SDK versions v2.6.0 to v2.4.0
+ - <code>v2.6.2-v2.4.0</code>: For nRF Connect SDK versions v2.6.2 to v2.4.0
  - <code>v2.3.0-v2.2.0</code>: For nRF Connect SDK versions v2.3.0 to v2.2.0
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 7289a52 (Mistake in branch name, v2.6.0 -> v2.6.2)
 
 The course supports the following hardware:
  - [nRF9151 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9151-DK) (nRF Connect SDK v2.6.0 or higher is needed)
