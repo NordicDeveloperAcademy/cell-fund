@@ -123,7 +123,6 @@ do_connect:
 		k_sleep(K_SECONDS(CONFIG_MQTT_RECONNECT_DELAY_S));
 	}
 
-	LOG_INF("Connection to broker using mqtt_connect");
 	err = mqtt_connect(&client);
 	if (err) {
 		LOG_ERR("Error in mqtt_connect: %d", err);
@@ -170,7 +169,7 @@ do_connect:
 
 	LOG_INF("Disconnecting MQTT client");
 
-	err = mqtt_disconnect(&client);
+	err = mqtt_disconnect(&client, NULL);
 	if (err) {
 		LOG_ERR("Could not disconnect MQTT client: %d", err);
 	}

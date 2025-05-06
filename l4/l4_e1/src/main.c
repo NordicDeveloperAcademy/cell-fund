@@ -160,7 +160,7 @@ do_connect:
 
 	LOG_INF("Disconnecting MQTT client");
 
-	err = mqtt_disconnect(&client);
+	err = mqtt_disconnect(&client, NULL);
 	if (err) {
 		LOG_ERR("Could not disconnect MQTT client: %d", err);
 	}
