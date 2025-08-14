@@ -7,10 +7,7 @@ In the  course, we will study the cellular technologies LTE-M and NB-IoT. We wil
 
 This repository contains the exercise code base and solutions. Make sure to select the branch that corresponds with the nRF Connect SDK version of your choosing:
 
- - <code>main</code>: For nRF Connect SDK versions v3.0.0
- - <code>v2.9.0-v2.7.0</code>: For nRF Connect SDK versions v2.9.0 - v2.7.0
- - <code>v2.6.2-v2.4.0</code>: For nRF Connect SDK versions v2.6.2 to v2.4.0
- - <code>v2.3.0-v2.2.0</code>: For nRF Connect SDK versions v2.3.0 to v2.2.0
+ - <code>main</code>: For nRF Connect SDK versions v3.1.0
  
 
 The course supports the following hardware:
