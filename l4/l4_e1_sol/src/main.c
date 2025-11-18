@@ -28,7 +28,7 @@ LOG_MODULE_REGISTER(Lesson4_Exercise1, LOG_LEVEL_INF);
 
 #define IMEI_LEN	15
 #define CGSN_RESPONSE_LENGTH (IMEI_LEN + 6 + 1) /* Add 6 for \r\nOK\r\n and 1 for \0 */
-#define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN
+#define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN /* \0 included in sizeof() statement */
 
 static K_SEM_DEFINE(lte_connected, 0, 1);
 
@@ -82,35 +82,56 @@ static int modem_configure(void)
 	return 0;
 }
 
-static const uint8_t* client_id_get(void)
+static int client_id_get(char * buffer, size_t buffer_len)
 {
 	/* STEP 9.1 Define the function to generate the client id */
-	static uint8_t client_id[MAX(sizeof(CONFIG_MQTT_SAMPLE_CLIENT_ID),
-				     CLIENT_ID_LEN)];
+		int len;
+	int err;
+	char imei_buf[CGSN_RESPONSE_LENGTH];
 
-	if (strlen(CONFIG_MQTT_SAMPLE_CLIENT_ID) > 0) {
-		snprintf(client_id, sizeof(client_id), "%s",
-			 CONFIG_MQTT_SAMPLE_CLIENT_ID);
-		goto exit;
+	if (!buffer || buffer_len == 0) {
+		LOG_ERR("Invalid buffer parameters");
+		return -EINVAL;
 	}
 
-	char imei_buf[CGSN_RESPONSE_LENGTH + 1];
-	int err;
+	if (strlen(CONFIG_MQTT_SAMPLE_CLIENT_ID) > 0) {
+		len = snprintk(buffer, buffer_len, "%s",
+			 CONFIG_MQTT_SAMPLE_CLIENT_ID);
+	if ((len < 0) || (len >= buffer_len)) {
+		LOG_ERR("Failed to format client ID from config, error: %d", len);
+		buffer[0] = '\0';
+		return -EMSGSIZE;
+	}
+	LOG_DBG("client_id = %s", buffer);
+	return 0;
+	}
 
 	err = nrf_modem_at_cmd(imei_buf, sizeof(imei_buf), "AT+CGSN");
 	if (err) {
 		LOG_ERR("Failed to obtain IMEI, error: %d", err);
-		goto exit;
+		buffer[0] = '\0';
+		return err;
+	}
+
+	/* Validate IMEI length before null termination */
+	if (IMEI_LEN >= sizeof(imei_buf)) {
+		LOG_ERR("IMEI_LEN exceeds buffer size");
+		buffer[0] = '\0';
+		return -EINVAL;
 	}
 
 	imei_buf[IMEI_LEN] = '\0';
 
-	snprintf(client_id, sizeof(client_id), "nrf-%.*s", IMEI_LEN, imei_buf);
+	len = snprintk(buffer, buffer_len, "nrf-%.*s", IMEI_LEN, imei_buf);
+	if ((len < 0) || (len >= buffer_len)) {
+		LOG_ERR("Failed to format client ID from IMEI, error: %d", len);
+		buffer[0] = '\0';
+		return -EMSGSIZE;
+	}
 
-exit:
-	LOG_DBG("client_id = %s", (char *)(client_id));
+	LOG_DBG("client_id = %s", buffer);
 
-	return client_id;
+	return 0;
 }
 
 /* STEP 4 - Define the function to subscribe to topics */
@@ -174,6 +195,8 @@ static int publish(uint8_t *data, size_t len)
 /* STEP 6.1 - Define callback handler for CONNACK event */
 static void on_mqtt_connack(enum mqtt_conn_return_code return_code, bool session_present)
 {
+	ARG_UNUSED(session_present);
+
 	if (return_code == MQTT_CONNECTION_ACCEPTED) {
 		LOG_INF("Connected to MQTT broker");
 		LOG_INF("Hostname: %s", CONFIG_MQTT_SAMPLE_BROKER_HOSTNAME);
@@ -185,7 +208,6 @@ static void on_mqtt_connack(enum mqtt_conn_return_code return_code, bool session
 		LOG_WRN("Connection to broker not established, return_code: %d", return_code);
 	}
 
-	ARG_UNUSED(return_code);
 }
 
 /* STEP 6.2 - Define callback handler for SUBACK event */
@@ -205,6 +227,7 @@ static void on_mqtt_suback(uint16_t message_id, int result)
 /* STEP 6.3 - Define callback handler for PUBLISH event */
 static void on_mqtt_publish(struct mqtt_helper_buf topic, struct mqtt_helper_buf payload)
 {
+	int err; 
 	LOG_INF("Received payload: %.*s on topic: %.*s", payload.size,
 							 payload.ptr,
 							 topic.size,
@@ -212,16 +235,32 @@ static void on_mqtt_publish(struct mqtt_helper_buf topic, struct mqtt_helper_buf
 	
 	if (strncmp(payload.ptr, LED1_ON_CMD,
 			    sizeof(LED1_ON_CMD) - 1) == 0) {
-				dk_set_led_on(DK_LED1);
+				err = dk_set_led_on(DK_LED1);
+				if (err) {
+					LOG_ERR("Failed to set LED %d on, error: %d", DK_LED1, err);
+					return;
+				}
 	} else if (strncmp(payload.ptr, LED1_OFF_CMD,
 			   sizeof(LED1_OFF_CMD) - 1) == 0) {
-				dk_set_led_off(DK_LED1);
+				err = dk_set_led_off(DK_LED1);
+				if (err) {
+					LOG_ERR("Failed to set LED %d off, error: %d", DK_LED1, err);
+					return;
+				}
 	} else if (strncmp(payload.ptr, LED2_ON_CMD,
 			   sizeof(LED2_ON_CMD) - 1) == 0) {
-				dk_set_led_on(DK_LED2);
+				err = dk_set_led_on(DK_LED2);
+				if (err) {
+					LOG_ERR("Failed to set LED %d on, error: %d", DK_LED2, err);
+					return;
+				}
 	} else if (strncmp(payload.ptr, LED2_OFF_CMD,
 			   sizeof(LED2_OFF_CMD) - 1) == 0) {
-				dk_set_led_off(DK_LED2);
+				err = dk_set_led_off(DK_LED2);
+				if (err) {
+					LOG_ERR("Failed to set LED %d off, error: %d", DK_LED2, err);
+					return;
+				}
 	}
 }
 
@@ -251,18 +290,22 @@ int main(void)
 {
 	int err;
 
-	if (dk_leds_init() != 0) {
-		LOG_ERR("Failed to initialize the LED library");
+	err = dk_leds_init();
+	if (err) {
+		LOG_ERR("Failed to initialize the LED library, error: %d", err);
+		return 0;
 	}
 
 	err = modem_configure();
 	if (err) {
-		LOG_ERR("Failed to configure the modem");
+		LOG_ERR("Failed to configure the modem, error: %d", err);
 		return 0;
 	}
 
-	if (dk_buttons_init(button_handler) != 0) {
-		LOG_ERR("Failed to initialize the buttons library");
+	err = dk_buttons_init(button_handler);
+	if (err) {
+		LOG_ERR("Failed to initialize the buttons library, error: %d", err);
+		return 0;
 	}
 
 	/* STEP 8 - Initialize the MQTT helper library */
@@ -282,8 +325,11 @@ int main(void)
 	}
 
 	/* STEP 9.3 - Generate the client ID */
-	const uint8_t *id_ptr = client_id_get();
-	memcpy(client_id, id_ptr, sizeof(client_id));
+	err = client_id_get(client_id, sizeof(client_id));
+    if (err) {
+        LOG_ERR("Failed to get client ID, error: %d", err);
+        return 0;
+    }
 
 	/* STEP 10 - Establish a connection to the MQTT broker */
 	struct mqtt_helper_conn_params conn_params = {

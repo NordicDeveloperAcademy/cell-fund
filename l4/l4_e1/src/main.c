@@ -22,7 +22,7 @@ LOG_MODULE_REGISTER(Lesson4_Exercise1, LOG_LEVEL_INF);
 
 #define IMEI_LEN	15
 #define CGSN_RESPONSE_LENGTH (IMEI_LEN + 6 + 1) /* Add 6 for \r\nOK\r\n and 1 for \0 */
-#define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN
+#define CLIENT_ID_LEN sizeof("nrf-") + IMEI_LEN /* \0 included in sizeof() statement */
 
 static K_SEM_DEFINE(lte_connected, 0, 1);
 
@@ -76,7 +76,7 @@ static int modem_configure(void)
 	return 0;
 }
 
-static const uint8_t* client_id_get(void)
+static int client_id_get(char * buffer, size_t buffer_len)
 {
 	/* STEP 9.1 Define the function to generate the client id */
 }
@@ -134,18 +134,22 @@ int main(void)
 {
 	int err;
 
-	if (dk_leds_init() != 0) {
-		LOG_ERR("Failed to initialize the LED library");
+	err = dk_leds_init();
+	if (err) {
+		LOG_ERR("Failed to initialize the LED library, error: %d", err);
+		return 0;
 	}
 
 	err = modem_configure();
 	if (err) {
-		LOG_ERR("Failed to configure the modem");
+		LOG_ERR("Failed to configure the modem, error: %d", err);
 		return 0;
 	}
 
-	if (dk_buttons_init(button_handler) != 0) {
-		LOG_ERR("Failed to initialize the buttons library");
+	err = dk_buttons_init(button_handler);
+	if (err) {
+		LOG_ERR("Failed to initialize the buttons library, error: %d", err);
+		return 0;
 	}
 
 		/* STEP 8 - Initialize the MQTT helper library */
@@ -153,4 +157,5 @@ int main(void)
 	/* STEP 9.3 - Generate the client ID */
 
 	/* STEP 10 - Establish a connection to the MQTT broker */
+
 }
