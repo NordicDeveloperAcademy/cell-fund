@@ -84,8 +84,7 @@ static int modem_configure(void)
 
 static int client_id_get(char * buffer, size_t buffer_len)
 {
-	/* STEP 9.1 Define the function to generate the client id */
-		int len;
+	int len;
 	int err;
 	char imei_buf[CGSN_RESPONSE_LENGTH];
 
@@ -99,7 +98,6 @@ static int client_id_get(char * buffer, size_t buffer_len)
 			 CONFIG_MQTT_SAMPLE_CLIENT_ID);
 	if ((len < 0) || (len >= buffer_len)) {
 		LOG_ERR("Failed to format client ID from config, error: %d", len);
-		buffer[0] = '\0';
 		return -EMSGSIZE;
 	}
 	LOG_DBG("client_id = %s", buffer);
@@ -109,14 +107,12 @@ static int client_id_get(char * buffer, size_t buffer_len)
 	err = nrf_modem_at_cmd(imei_buf, sizeof(imei_buf), "AT+CGSN");
 	if (err) {
 		LOG_ERR("Failed to obtain IMEI, error: %d", err);
-		buffer[0] = '\0';
 		return err;
 	}
 
 	/* Validate IMEI length before null termination */
 	if (IMEI_LEN >= sizeof(imei_buf)) {
 		LOG_ERR("IMEI_LEN exceeds buffer size");
-		buffer[0] = '\0';
 		return -EINVAL;
 	}
 
@@ -125,7 +121,6 @@ static int client_id_get(char * buffer, size_t buffer_len)
 	len = snprintk(buffer, buffer_len, "nrf-%.*s", IMEI_LEN, imei_buf);
 	if ((len < 0) || (len >= buffer_len)) {
 		LOG_ERR("Failed to format client ID from IMEI, error: %d", len);
-		buffer[0] = '\0';
 		return -EMSGSIZE;
 	}
 
