@@ -7,11 +7,12 @@ In the  course, we will study the cellular technologies LTE-M and NB-IoT. We wil
 
 This repository contains the exercise code base and solutions. Make sure to select the branch that corresponds with the nRF Connect SDK version of your choosing:
 
- - <code>main</code>: For nRF Connect SDK versions v3.1.0
+ - <code>main</code>: For nRF Connect SDK versions v3.2.0
  
 
 The course supports the following hardware:
  - [nRF9151 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9151-DK) (nRF Connect SDK v2.6.0 or higher is needed)
+ - [nRF9151 SMA DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9151-SMA-DK)
  - [nRF9161 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9161-DK) (nRF Connect SDK v2.5.0 or higher is needed)
  - [nRF9160 DK](https://www.nordicsemi.com/Products/Development-hardware/nRF9160-DK)
  - [Thingy:91 X](https://www.nordicsemi.com/Products/Development-hardware/Nordic-Thingy-91-X) (nRF Connect SDK v2.8.0 or higher is needed)
