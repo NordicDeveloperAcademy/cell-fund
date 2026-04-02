@@ -11,8 +11,12 @@ common:
       - nrf9160dk/nrf9160/ns
       - thingy91x/nrf9151/ns
       - thingy91/nrf9160/ns
-    platform_exclude:
-      - native_sim
-    
+    platform_allow: 
+      - nrf9151dk/nrf9151/ns
+      - nrf9161dk/nrf9161/ns
+      - nrf9160dk/nrf9160/ns
+      - thingy91x/nrf9151/ns
+      - thingy91/nrf9160/ns
+
 tests:
   cell_fund.l5.e1_sol: {}
