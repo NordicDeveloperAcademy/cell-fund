@@ -23,7 +23,7 @@ LOG_MODULE_REGISTER(Lesson4_Exercise1, LOG_LEVEL_INF);
 #define LED1_OFF_CMD      "LED1OFF"
 #define LED2_ON_CMD       "LED2ON"
 #define LED2_OFF_CMD      "LED2OFF"
-#define BUTTON_MSG        "Hi from nRF9151 SiP"
+#define BUTTON_MSG        "Button 1 pressed"
 #define SUBSCRIBE_TOPIC_ID 1234
 
 #define IMEI_LEN	15
@@ -269,7 +269,7 @@ static void button_handler(uint32_t button_state, uint32_t has_changed)
 {
 	switch (has_changed) {
 	case DK_BTN1_MSK:
-		/* STEP 7.2 - Publish message when button 1 is pressed */
+		/* STEP 7.1 - Publish message when button 1 is pressed */
 		if (button_state & DK_BTN1_MSK){
 			int err = publish(BUTTON_MSG, sizeof(BUTTON_MSG)-1);
 			if (err) {
