@@ -9,6 +9,7 @@
 #include <string.h>
 #include <ncs_version.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/net/coap.h>
 #include <zephyr/net/socket.h>
 #include <modem/nrf_modem_lib.h>
