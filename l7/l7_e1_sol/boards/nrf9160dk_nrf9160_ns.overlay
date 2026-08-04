@@ -5,5 +5,5 @@
  */
 
 #include <samples/cellular/nrf91_crypto_partitions.dtsi>
+#include <samples/cellular/nrf91_sram_partitions.dtsi>
 
-#include <samples/cellular/nrf91_sram_crypto_partitions.dtsi>
