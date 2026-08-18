@@ -1,0 +1,146 @@
+/delete-node/ &slot0_partition;
+/delete-node/ &slot1_partition;
+/delete-node/ &s0_partition;
+/delete-node/ &s1_partition;
+/delete-node/ &storage_partition;
+/delete-node/ &external_flash_partition;
+/delete-node/ &fmfu_storage_partition;
+
+&flash0 {
+	/*
+	 * 0x0000_0000  MCUboot (B0/NSIB)            ( 32 kB)
+	 * 0x0000_8000  Primary updatable MCUboot    ( 80 kB)
+	 * 0x0001_c000  Secondary updatable MCUboot  ( 80 kB)
+	 * 0x0003_0000  Primary image area           (768 kB)
+	 *   0x0003_0000  Primary secure image       ( 96 kB)
+	 *   0x0004_8000  Primary non-secure image   (672 kB)
+	 * 0x000f_0000  TF-M storage area            ( 32 kB)
+	 *   0x000f_0000  TF-M Internal Trusted Stg  (  8 kB)
+	 *   0x000f_2000  TF-M OTP / NV counters     (  8 kB)
+	 *   0x000f_4000  TF-M Protected Storage     ( 16 kB)
+	 * 0x000f_8000  Free                         ( 32 kB)
+	 */
+	partitions {
+		ranges;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		b0_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot";
+			reg = <0x00000000 0x8000>;
+		};
+
+		s0_partition: partition@8000 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot-0";
+			reg = <0x00008000 0x14000>;
+		};
+
+		s1_partition: partition@1c000 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot-1";
+			reg = <0x0001c000 0x14000>;
+		};
+
+		slot0_partition: partition@30000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x00030000 0xc0000>;
+			ranges = <0x0 0x00030000 0xc0000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot0_s_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-0-secure";
+				reg = <0x00000000 0x18000>;
+			};
+
+			slot0_ns_partition: partition@18000 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-0-nonsecure";
+				reg = <0x00018000 0xa8000>;
+			};
+		};
+
+		tfm_storage_partition: partition@f0000 {
+			compatible = "zephyr,mapped-partition";
+			label = "tfm-storage";
+			reg = <0x000f0000 DT_SIZE_K(32)>;
+			ranges = <0x0 0x000f0000 DT_SIZE_K(32)>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			tfm_its_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-its";
+				reg = <0x0 DT_SIZE_K(8)>;
+			};
+
+			tfm_otp_partition: partition@2000 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-otp";
+				reg = <0x2000 DT_SIZE_K(8)>;
+			};
+
+			tfm_ps_partition: partition@4000 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-ps";
+				reg = <0x4000 DT_SIZE_K(16)>;
+			};
+		};
+	};
+};
+
+&flash_ext {
+	/*
+	 * 0x0000_0000  Secondary image area          (  768 kB)
+	 *   0x0000_0000  Secondary secure image      (   96 kB)
+	 *   0x0001_8000  Secondary non-secure image  (  672 kB)
+	 * 0x000c_0000  Full Modem Firmware Update    ( 4096 kB)
+	 * 0x004c_0000  Settings                      (    8 kB)
+	 * 0x004c_2000  Free                          (27896 kB)
+	 */
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		slot1_partition: partition@0 {
+			compatible = "fixed-subpartitions";
+			label = "image-1";
+			reg = <0x00000000 0xc0000>;
+			ranges = <0x0 0x00000 0xc0000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot1_s_partition: partition@0 {
+				label = "image-1-secure";
+				reg = <0x00000000 0x18000>;
+			};
+
+			slot1_ns_partition: partition@18000 {
+				label = "image-1-nonsecure";
+				reg = <0x00018000 0xa8000>;
+			};
+		};
+
+		fmfu_storage_partition: partition@c0000 {
+			label = "fmfu_storage";
+			reg = <0x000c0000 0x400000>;
+		};
+
+		storage_partition: partition@4c0000 {
+			label = "settings_storage";
+			reg = <0x004c0000 0x2000>;
+		};
+
+		external_flash_partition: partition@4c2000 {
+			label = "external_flash";
+			reg = <0x004c2000 0x1b3e000>;
+		};
+	};
+};
+
+#include <samples/cellular/nrf91_sram_crypto_partitions.dtsi>
