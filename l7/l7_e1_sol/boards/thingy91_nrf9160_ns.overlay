@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) 2026 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/delete-node/ &slot0_partition;
+/delete-node/ &slot1_partition;
+
+&flash0 {
+	/*
+	 * 0x0000_0000  MCUboot                        ( 96 kB)
+	 * 0x0001_8000  Primary area                   (380 kB)
+	 *   0x0001_8000  Primary secure image         ( 64 kB)
+	 *   0x0002_8000  Primary non-secure image     (316 kB)
+	 * 0x0007_7000  Secondary area                 (380 kB)
+	 *   0x0007_7000  Secondary secure image       ( 64 kB)
+	 *   0x0008_7000  Secondary non-secure image   (316 kB)
+	 * 0x000d_6000  TF-M storage area              ( 32 kB)
+	 *   0x000d_6000  TF-M Internal Trusted Stg    (  8 kB)
+	 *   0x000d_8000  TF-M OTP / NV counters       (  8 kB)
+	 *   0x000d_a000  TF-M Protected Storage       ( 16 kB)
+	 * 0x000d_e000  DFU scratch area               (120 kB)
+	 * 0x000f_e000  Settings storage               (  8 kB)
+	 */
+	partitions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
+			label = "mcuboot";
+			reg = <0x00000000 0x18000>;
+		};
+
+		slot0_partition: partition@18000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-0";
+			reg = <0x00018000 0x5f000>;
+			ranges = <0x0 0x00018000 0x5f000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot0_s_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-0-secure";
+				reg = <0x00000000 0x10000>;
+			};
+
+			slot0_ns_partition: partition@10000 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-0-nonsecure";
+				reg = <0x00010000 0x4f000>;
+			};
+		};
+
+		slot1_partition: partition@77000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-1";
+			reg = <0x00077000 0x5f000>;
+			ranges = <0x0 0x00077000 0x5f000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot1_s_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-1-secure";
+				reg = <0x00000000 0x10000>;
+			};
+
+			slot1_ns_partition: partition@10000 {
+				compatible = "zephyr,mapped-partition";
+				label = "image-1-nonsecure";
+				reg = <0x00010000 0x4f000>;
+			};
+		};
+
+		tfm_storage_partition: partition@d6000 {
+			compatible = "zephyr,mapped-partition";
+			label = "tfm-storage";
+			reg = <0x000d6000 DT_SIZE_K(32)>;
+			ranges = <0x0 0x000d6000 DT_SIZE_K(32)>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			tfm_its_partition: partition@0 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-its";
+				reg = <0x0 DT_SIZE_K(8)>;
+			};
+
+			tfm_otp_partition: partition@2000 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-otp";
+				reg = <0x2000 DT_SIZE_K(8)>;
+			};
+
+			tfm_ps_partition: partition@4000 {
+				compatible = "zephyr,mapped-partition";
+				label = "tfm-ps";
+				reg = <0x4000 DT_SIZE_K(16)>;
+			};
+		};
+
+		scratch_partition: partition@de000 {
+			compatible = "zephyr,mapped-partition";
+			label = "image-scratch";
+			reg = <0x000de000 0x1e000>;
+		};
+
+		storage_partition: partition@fe000 {
+			compatible = "zephyr,mapped-partition";
+			label = "storage";
+			reg = <0x000fe000 0x2000>;
+		};
+	};
+};
+
+#include <common/nordic/nrf91_partition_sram.dtsi>
